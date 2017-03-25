@@ -16,6 +16,7 @@ import java.net.URISyntaxException;
 public class PDLClient {
     public static PDLClient instance;
     String _playerName;
+    String _currentRoom;
     PDLMasterClient _master = null;
     Socket toServer;
     
@@ -43,9 +44,11 @@ public class PDLClient {
         //instantiate static instance
         PDLClient player = PDLClient.getInstance();
         
-        //create and display home gui
+        //construct gui
         HomeGUI gui = HomeGUI.getInstance();
         SelectRoomGUI sGui = SelectRoomGUI.getInstance();
+        WaitingRoomGUI wait =  WaitingRoomGUI.getInstance();
+        
     }
     
     public void setPlayerName(String name){
@@ -63,5 +66,10 @@ public class PDLClient {
     public void setMaster(String roomCode) throws IOException{
         _master = new PDLMasterClient(roomCode);
     }
-    
+    public void setCurrentRoom(String code){
+        _currentRoom  = code;
+    }
+    public String getCurrentRoom(){
+        return _currentRoom;
+    }
 }

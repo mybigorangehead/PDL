@@ -126,6 +126,7 @@ public class SelectRoomGUI {
             BufferedReader socketReader;
             PrintWriter socketWriter; 
             try {
+               
                 System.out.println("trying to create room");
                 PDLClient.instance.toServer = new Socket("127.0.0.1", 3000);
                 socketReader = new BufferedReader(new InputStreamReader(PDLClient.instance.toServer.getInputStream()));
@@ -136,9 +137,14 @@ public class SelectRoomGUI {
                 System.out.println("here");
                 String myRoomCode = socketReader.readLine();
                 System.out.println(myRoomCode);
-                PDLClient.instance.setMaster(myRoomCode);
+                
                 socketReader.close();
                 socketWriter.close();
+                frame.setVisible(false);
+                WaitingRoomGUI.instance.frame.setVisible(true);
+                PDLClient.instance.setMaster(myRoomCode); 
+                WaitingRoomGUI.instance.updateDisplay();
+               // PDLClient.instance._master.WaitForPlayers();
             } catch (IOException ex) {
                 Logger.getLogger(SelectRoomGUI.class.getName()).log(Level.SEVERE, null, ex);
             }
