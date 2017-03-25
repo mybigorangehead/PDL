@@ -79,7 +79,7 @@ public class HomeGUI {
         cons.gridy = 2;
         panel.add(colors, cons);
         //create a font
-        Font font1 = new Font("Comic Sans MS", Font.BOLD, 14);
+        Font font1 = new Font("Comic Sans MS", Font.BOLD, 16);
         
         //NickName text field
         name = new JTextField("Nickname", 10);
@@ -88,7 +88,7 @@ public class HomeGUI {
         cons.fill = GridBagConstraints.NONE;
         cons.gridy = 3;
         cons.gridx = 0;
-        cons.ipady = 8;
+        cons.ipady = 0;
         cons.ipadx = 0;
         panel.add(name, cons);
         

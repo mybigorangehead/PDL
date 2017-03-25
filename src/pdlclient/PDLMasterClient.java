@@ -5,15 +5,19 @@
  */
 package pdlclient;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
  * @author Josh
  */
-public class PDLMasterClient {
+public class PDLMasterClient extends Thread{
     ServerSocket _master;
     String _roomCode;
     int listenPort = 3500;
@@ -21,15 +25,22 @@ public class PDLMasterClient {
     boolean inGame = false;
     public PDLMasterClient(String room) throws IOException{
         _roomCode = room;
+        PDLClient.instance.setCurrentRoom(_roomCode);
         _master = new ServerSocket(listenPort);
-        WaitForPlayers();
+        start();
     }
     
-    void WaitForPlayers() throws IOException{
-        Socket incomingPlayer;
+    @Override
+    public void run() {
+        Socket incomingPlayer = null;
+       // BufferedReader socketReader = new BufferedReader(new InputStreamReader(PDLClient.instance.toServer.getInputStream()));
         System.out.println("Waiting for players");
         while(!inGame){
-            incomingPlayer = _master.accept();
+            try {
+                incomingPlayer = _master.accept();
+            } catch (IOException ex) {
+                Logger.getLogger(PDLMasterClient.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
     }
 }
