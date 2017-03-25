@@ -15,14 +15,12 @@ import java.net.URISyntaxException;
  */
 public class PDLClient {
     public static PDLClient instance;
-    public String playerName;
-    public PDLMasterClient master = null;
+    String _playerName;
+    PDLMasterClient _master = null;
     Socket toServer;
     
-    
-    
     //player icons are 512 x 512 pics
-    public BufferedImage playerIcon;
+    BufferedImage _playerIcon;
     
     
     //socket to server
@@ -47,7 +45,23 @@ public class PDLClient {
         
         //create and display home gui
         HomeGUI gui = HomeGUI.getInstance();
-        SelectRoomGUI r = new SelectRoomGUI();
+        SelectRoomGUI sGui = SelectRoomGUI.getInstance();
+    }
+    
+    public void setPlayerName(String name){
+        _playerName = name;
+    }
+    public void setPlayerIcon(BufferedImage i){
+        _playerIcon = i;
+    }
+    public String getPlayerName(){
+        return _playerName;
+    }
+    public BufferedImage getPlayerIcon(){
+        return _playerIcon;
+    }
+    public void setMaster(String roomCode) throws IOException{
+        _master = new PDLMasterClient(roomCode);
     }
     
 }

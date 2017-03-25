@@ -5,6 +5,8 @@
  */
 package pdlclient;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import javax.swing.*;
@@ -22,7 +24,8 @@ public class HomeGUI {
     JFrame frame;
     DrawPanel draw;
     JTextField name;
-    
+    JButton quickPlay;
+    JButton customPlay;
     public static HomeGUI getInstance() throws IOException, URISyntaxException{
         if(instance == null){
             instance = new HomeGUI();
@@ -58,7 +61,7 @@ public class HomeGUI {
         panel.add(titleLable, cons);
         
         //the drawing box
-        int size = 256;
+        int size = 128;
         draw = new DrawPanel(size);
         cons.fill = GridBagConstraints.NONE;
         cons.ipadx = size;
@@ -68,7 +71,7 @@ public class HomeGUI {
        // cons.weightx = 5;
         panel.add(draw, cons);
         //add color picker
-        JPanel colors = draw.getColorPanel(32);
+        JPanel colors = draw.getColorPanel(16);
         cons.fill = GridBagConstraints.NONE;
         cons.ipadx = 0;
         cons.ipady = 0;
@@ -76,7 +79,7 @@ public class HomeGUI {
         cons.gridy = 2;
         panel.add(colors, cons);
         //create a font
-        Font font1 = new Font("Comic Sans MS", Font.BOLD, 28);
+        Font font1 = new Font("Comic Sans MS", Font.BOLD, 14);
         
         //NickName text field
         name = new JTextField("Nickname", 10);
@@ -85,7 +88,7 @@ public class HomeGUI {
         cons.fill = GridBagConstraints.NONE;
         cons.gridy = 3;
         cons.gridx = 0;
-        cons.ipady = 20;
+        cons.ipady = 8;
         cons.ipadx = 0;
         panel.add(name, cons);
         
@@ -117,15 +120,17 @@ public class HomeGUI {
         URI cpURL = getClass().getResource("/images/customplay.png").toURI();
         File cpPic = new File(cpURL);
         BufferedImage cp = ImageIO.read(cpPic);
-        JButton play2 = new JButton(new ImageIcon(cp));
+        customPlay = new JButton(new ImageIcon(cp));
          //remove borer
-        play2.setBorder(BorderFactory.createEmptyBorder());
-        play2.setContentAreaFilled(false);
+        customPlay.setBorder(BorderFactory.createEmptyBorder());
+        customPlay.setContentAreaFilled(false);
+        ActionListener cAl = new MenuButtons();
+        customPlay.addActionListener(cAl);
         //cons.fill = GridBagConstraints.HORIZONTAL;
         cons.gridy = 5;
         cons.gridx = 0;
         cons.ipady = 20;
-        panel.add(play2, cons);
+        panel.add(customPlay, cons);
         frame.add(panel);
 
         frame.setVisible(true);
@@ -134,8 +139,8 @@ public class HomeGUI {
     
     //called when a player selects quick play or custom play
     public void SetClientInfo(){
-        PDLClient.instance.playerIcon = draw.getImage();
-        PDLClient.instance.playerName = name.getText();
+        PDLClient.instance.setPlayerIcon(draw.getImage());
+        PDLClient.instance.setPlayerName(name.getText());
     }
     //Fill in
     public void QuickPlay(){
@@ -144,6 +149,22 @@ public class HomeGUI {
     
     //Fill in
     public void CustomPlay(){
+        SetClientInfo();
+        frame.setVisible(false);
+        SelectRoomGUI.instance.frame.setVisible(true);
+        
+    }
+    public class MenuButtons implements ActionListener{
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if(e.getSource() == quickPlay){
+                QuickPlay();
+            }
+            else if(e.getSource() == customPlay){
+                CustomPlay();
+            }
+        }
         
     }
 }

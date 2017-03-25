@@ -36,9 +36,17 @@ import javax.swing.JTextField;
  * @author Josh
  */
 public class SelectRoomGUI {
+    public static SelectRoomGUI instance = null;
     JTextField name;
     JFrame frame;
-    public SelectRoomGUI() throws IOException, URISyntaxException{
+    
+     public static SelectRoomGUI getInstance() throws IOException, URISyntaxException{
+        if(instance == null){
+            instance = new SelectRoomGUI();
+        }
+        return instance;
+    }
+    private SelectRoomGUI() throws IOException, URISyntaxException{
         frame = new JFrame("Select Room");
          Color c  = new Color(99, 194, 255);
         frame.getContentPane().setBackground(c);
@@ -107,7 +115,7 @@ public class SelectRoomGUI {
         
         frame.add(panel);
 
-       frame.setVisible(true);
+       frame.setVisible(false);
     }
     
     final String CREATE_CODE = "210";
@@ -128,7 +136,7 @@ public class SelectRoomGUI {
                 System.out.println("here");
                 String myRoomCode = socketReader.readLine();
                 System.out.println(myRoomCode);
-                PDLClient.instance.master = new PDLMasterClient(myRoomCode);
+                PDLClient.instance.setMaster(myRoomCode);
                 socketReader.close();
                 socketWriter.close();
             } catch (IOException ex) {
