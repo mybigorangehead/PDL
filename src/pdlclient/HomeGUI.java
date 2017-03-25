@@ -18,16 +18,24 @@ import java.net.URISyntaxException;
  * @author Josh
  */
 public class HomeGUI {
+    public static HomeGUI instance;
     JFrame frame;
     DrawPanel draw;
     JTextField name;
     
+    public static HomeGUI getInstance() throws IOException, URISyntaxException{
+        if(instance == null){
+            instance = new HomeGUI();
+        }
+        return instance;
+    }
     //constructs the home page interface
-    public HomeGUI() throws IOException, URISyntaxException{
+    private HomeGUI() throws IOException, URISyntaxException{
+        
         frame = new JFrame("Picture Down The Lane");
         Color c  = new Color(99, 194, 255);
         frame.getContentPane().setBackground(c);
-        frame.setSize(2048, 1600);
+        frame.setSize(1024, 900);
         frame.setLocationRelativeTo(null);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
        
@@ -39,8 +47,7 @@ public class HomeGUI {
         URI imageurl = getClass().getResource("/images/homepage.png").toURI();
         File f = new File(imageurl);
         BufferedImage title = ImageIO.read(f);
-        
-        
+     
         JLabel titleLable = new JLabel(new ImageIcon(title));
         cons.fill = GridBagConstraints.NONE;
         cons.gridx = 0;
@@ -51,7 +58,7 @@ public class HomeGUI {
         panel.add(titleLable, cons);
         
         //the drawing box
-        int size = 512;
+        int size = 256;
         draw = new DrawPanel(size);
         cons.fill = GridBagConstraints.NONE;
         cons.ipadx = size;
@@ -69,10 +76,10 @@ public class HomeGUI {
         cons.gridy = 2;
         panel.add(colors, cons);
         //create a font
-        Font font1 = new Font("Comic Sans MS", Font.BOLD, 72);
+        Font font1 = new Font("Comic Sans MS", Font.BOLD, 28);
         
         //NickName text field
-        name = new JTextField("Nickname", 8);
+        name = new JTextField("Nickname", 10);
         name.setFont(font1);
         name.setBorder(BorderFactory.createEmptyBorder());
         cons.fill = GridBagConstraints.NONE;

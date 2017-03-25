@@ -6,6 +6,7 @@
 package pdlclient;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.net.Socket;
 import java.net.URISyntaxException;
 
 /**
@@ -15,7 +16,11 @@ import java.net.URISyntaxException;
 public class PDLClient {
     public static PDLClient instance;
     public String playerName;
-            
+    public PDLMasterClient master = null;
+    Socket toServer;
+    
+    
+    
     //player icons are 512 x 512 pics
     public BufferedImage playerIcon;
     
@@ -27,20 +32,21 @@ public class PDLClient {
      * @throws java.io.IOException
      */
     PDLClient(){
-        
+     
     }
-    public static void setInstance(){
+    public static PDLClient getInstance(){
         if(instance == null){
             instance = new PDLClient();
         }
+        return instance;
     }
     
     public static void main(String[] args) throws IOException, URISyntaxException {
         //instantiate static instance
-        PDLClient.setInstance();
+        PDLClient player = PDLClient.getInstance();
         
         //create and display home gui
-        HomeGUI gui = new HomeGUI();
+        HomeGUI gui = HomeGUI.getInstance();
         SelectRoomGUI r = new SelectRoomGUI();
     }
     
