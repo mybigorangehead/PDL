@@ -123,9 +123,9 @@ public class SelectRoomGUI {
                 socketReader = new BufferedReader(new InputStreamReader(PDLClient.instance.toServer.getInputStream()));
                 socketWriter = new PrintWriter(PDLClient.instance.toServer.getOutputStream());
                 //send code for creating room
-                socketWriter.write(CREATE_CODE);
+                socketWriter.println(CREATE_CODE);
                 socketWriter.flush();
-                
+                System.out.println("here");
                 String myRoomCode = socketReader.readLine();
                 System.out.println(myRoomCode);
                 PDLClient.instance.master = new PDLMasterClient(myRoomCode);
