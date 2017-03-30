@@ -14,6 +14,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -122,8 +123,14 @@ public class WaitingRoomGUI {
     }
     public void updateDisplay(){
         roomCode.setText(PDLClient.instance.getCurrentRoom());
-        players[0].setText(PDLClient.instance.getPlayerName());
-        playerIcons[0].setDisabledIcon(new ImageIcon(PDLClient.instance.getPlayerIcon()));
+        //players[0].setText(PDLClient.instance.getPlayerName());
+        //playerIcons[0].setIcon(new ImageIcon(PDLClient.instance.getPlayerIcon().getScaledInstance(56, 56, 0)));
+        ArrayList<String> names = PDLClient.instance.getPlayerList();
+        ArrayList<BufferedImage> icons = PDLClient.instance.getPlayerIcons();
+        for(int i = 0; i <names.size(); i++){
+            players[i].setText(names.get(i));
+            playerIcons[i].setIcon(new ImageIcon(icons.get(i).getScaledInstance(56, 56, 0)));            
+        }
     }
      
 }

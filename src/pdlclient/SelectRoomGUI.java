@@ -37,9 +37,10 @@ import javax.swing.JTextField;
  */
 public class SelectRoomGUI {
     public static SelectRoomGUI instance = null;
-    JTextField name;
+    JTextField code;
     JFrame frame;
-    
+    JButton play;
+    JButton join;
      public static SelectRoomGUI getInstance() throws IOException, URISyntaxException{
         if(instance == null){
             instance = new SelectRoomGUI();
@@ -61,7 +62,7 @@ public class SelectRoomGUI {
         URI qpURL = getClass().getResource("/images/createroom.png").toURI();
         File qpPic = new File(qpURL);
         BufferedImage qp = ImageIO.read(qpPic);
-        JButton play = new JButton(new ImageIcon(qp));
+        play = new JButton(new ImageIcon(qp));
         //remove borer
         play.setBorder(BorderFactory.createEmptyBorder());
         play.setContentAreaFilled(false);
@@ -69,8 +70,8 @@ public class SelectRoomGUI {
         cons.gridy = 0;
         cons.gridx = 0;
         cons.ipady = 20;
-        ActionListener l = new CreateRoomButton();
-        play.addActionListener(l);
+        ActionListener actionL = new PlayButton();
+        play.addActionListener(actionL);
         //cons.weight = 1;
         panel.add(play, cons);
         
@@ -78,15 +79,15 @@ public class SelectRoomGUI {
         
         
         //NickName text field
-        name = new JTextField("Enter", 10);
-        name.setFont(font1);
-        name.setBorder(BorderFactory.createEmptyBorder());
+        code = new JTextField("Enter", 10);
+        code.setFont(font1);
+        code.setBorder(BorderFactory.createEmptyBorder());
         cons.fill = GridBagConstraints.NONE;
         cons.gridy = 1;
         cons.gridx = 0;
         cons.ipady = 20;
         cons.ipadx = 0;
-        panel.add(name, cons);
+        panel.add(code, cons);
         
         //NICKNAME BACKGROUND
         URI nURL = getClass().getResource("/images/nnbg.png").toURI();
@@ -102,10 +103,11 @@ public class SelectRoomGUI {
         URI jURL = getClass().getResource("/images/joinroom.png").toURI();
         File jPic = new File(jURL);
         BufferedImage j = ImageIO.read(jPic);
-        JButton join = new JButton(new ImageIcon(j));
+        join = new JButton(new ImageIcon(j));
         //remove borer
         join.setBorder(BorderFactory.createEmptyBorder());
         join.setContentAreaFilled(false);
+        join.addActionListener(actionL);
         cons.fill = GridBagConstraints.NONE;
         cons.gridy = 2;
         cons.gridx = 0;
@@ -119,36 +121,19 @@ public class SelectRoomGUI {
     }
     
     final String CREATE_CODE = "210";
-    public class CreateRoomButton implements ActionListener{
-
+    final String JOIN_CODE = "240";
+    public class PlayButton implements ActionListener{
         @Override
         public void actionPerformed(ActionEvent e) {
-            BufferedReader socketReader;
-            PrintWriter socketWriter; 
-            try {
-               
-                System.out.println("trying to create room");
-                PDLClient.instance.toServer = new Socket("127.0.0.1", 3000);
-                socketReader = new BufferedReader(new InputStreamReader(PDLClient.instance.toServer.getInputStream()));
-                socketWriter = new PrintWriter(PDLClient.instance.toServer.getOutputStream());
-                //send code for creating room
-                socketWriter.println(CREATE_CODE);
-                socketWriter.flush();
-                System.out.println("here");
-                String myRoomCode = socketReader.readLine();
-                System.out.println(myRoomCode);
-                
-                socketReader.close();
-                socketWriter.close();
-                frame.setVisible(false);
-                WaitingRoomGUI.instance.frame.setVisible(true);
-                PDLClient.instance.setMaster(myRoomCode); 
-                WaitingRoomGUI.instance.updateDisplay();
-               // PDLClient.instance._master.WaitForPlayers();
-            } catch (IOException ex) {
-                Logger.getLogger(SelectRoomGUI.class.getName()).log(Level.SEVERE, null, ex);
+            if(e.getSource() == play){
+                PDLClient.instance.createRoom();
             }
-        }
+            else if(e.getSource() == join){
+                PDLClient.instance.joinRoom(code.getText());
+            }
+            
+        }        
+        
         
     }
 }
