@@ -8,11 +8,14 @@ package pdlclient;
 import java.awt.List;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -74,7 +77,14 @@ public class PDLMasterClient{
             //read player name
             String playerName = socketReader.readLine();
             //read player image
-            BufferedImage playerIcon = ImageIO.read(ImageIO.createImageInputStream(s.getInputStream()));
+            byte[] sizeArr = new byte[4];
+            s.getInputStream().read(sizeArr);
+            int size = ByteBuffer.wrap(sizeArr).asIntBuffer().get();
+            
+            byte[] imgArr = new byte[size];
+            s.getInputStream().read(imgArr);
+            
+            BufferedImage playerIcon = ImageIO.read(new ByteArrayInputStream(imgArr));
             //add player to my players
             PDLClient.instance.addPlayer(playerName, playerIcon);
             WaitingRoomGUI.instance.updateDisplay();
@@ -83,20 +93,28 @@ public class PDLMasterClient{
             ArrayList<BufferedImage> icons = PDLClient.instance.getPlayerIcons();
             
             for(int i =0; i <names.size(); i++){
+                //send name
                 socketWriter.println(names.get(i));
                 socketWriter.flush();
-                //String wait = socketReader.readLine();
-               /* ImageIO.write(icons.get(i), "PNG", s.getOutputStream());
-                s.getOutputStream().flush();*/
+                
+                //read image into byte stream
+                ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
+                ImageIO.write(icons.get(i), "PNG", byteOut);
+                //get image size
+                byte [] imgSize = ByteBuffer.allocate(4).putInt(byteOut.size()).array();
+                //write size and image to client
+                s.getOutputStream().write(imgSize);
+                s.getOutputStream().write(byteOut.toByteArray());
+                s.getOutputStream().flush();
             }
             socketWriter.println(BYE);
-            socketWriter.flush();
+            socketWriter.flush();/*
             for(int i =0; i <icons.size(); i++){
                 ImageIO.write(icons.get(i), "PNG", s.getOutputStream());
                 s.getOutputStream().flush();
                 //read the nonsense
                 socketReader.readLine();
-            }
+            }*/
             
             //send everyone else only the new player using their threads
             

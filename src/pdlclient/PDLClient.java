@@ -6,11 +6,14 @@
 package pdlclient;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.URISyntaxException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -220,7 +223,7 @@ public class PDLClient {
             try {
                 while(true){
                     String command = _socketReader.readLine();
-                    //master client wants my player name and icon
+                    //master client wants me to officially join, ie send my name and icon, and send me all the names and icons
                     if(command.equals("JOIN")){
                         setUpLobbyDisplay();
                         
@@ -233,17 +236,36 @@ public class PDLClient {
         }
         void setUpLobbyDisplay(){
             try {
+                //send my name
                 _socketWriter.println(PDLClient.instance.getPlayerName());
                 _socketWriter.flush();
-                ImageIO.write(PDLClient.instance.getPlayerIcon(), "PNG", _toMaster.getOutputStream());
+                
+                //read my icon into byte stream
+                ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
+                ImageIO.write(PDLClient.instance.getPlayerIcon(), "PNG", byteOut);
+                
+                //get image size, write both size and image to master client
+                byte [] imgSize = ByteBuffer.allocate(4).putInt(byteOut.size()).array();
+                _toMaster.getOutputStream().write(imgSize);
+                _toMaster.getOutputStream().write(byteOut.toByteArray());
+                _toMaster.getOutputStream().flush();
+                
                 String name;
-                /*while(!(name = _socketReader.readLine()).equals("BYE")){
+                while(!(name = _socketReader.readLine()).equals("BYE")){
                     System.out.println(name);
-                    BufferedImage playerIcon = ImageIO.read(ImageIO.createImageInputStream(_toMaster.getInputStream()));
+                    
+                    byte[] sizeArr = new byte[4];
+                    _toMaster.getInputStream().read(sizeArr);
+                    int size = ByteBuffer.wrap(sizeArr).asIntBuffer().get();
+
+                    byte[] imgArr = new byte[size];
+                    _toMaster.getInputStream().read(imgArr);
+
+                    BufferedImage playerIcon = ImageIO.read(new ByteArrayInputStream(imgArr));
                     PDLClient.instance.addPlayer(name, playerIcon);
                 }
-                */
-                ArrayList<String> players = new ArrayList<>();
+                
+                /*ArrayList<String> players = new ArrayList<>();
                 while(!(name = _socketReader.readLine()).equals("BYE")){
                     System.out.println(name);
                     players.add(name);
@@ -263,7 +285,7 @@ public class PDLClient {
                 
                 for(int i =0; i <players.size(); i++){
                     PDLClient.instance.addPlayer(players.get(i), icons.get(i));
-                }
+                }*/
                 WaitingRoomGUI.instance.updateDisplay();
             } catch (IOException ex) {
                 System.out.println("Error sending name or icon.");
