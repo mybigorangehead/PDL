@@ -9,6 +9,8 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -18,6 +20,7 @@ import java.util.ArrayList;
 import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -31,10 +34,11 @@ import javax.swing.JTextField;
 public class WaitingRoomGUI {
     public static WaitingRoomGUI instance;
     public JFrame frame;
-    JTextField roomCode;
-    int maxPlayers = 6;
-    JTextField [] players = new JTextField[maxPlayers];
-    JLabel [] playerIcons = new JLabel[maxPlayers];
+    private JTextField roomCode;
+    private int maxPlayers = 6;
+    private JTextField [] players = new JTextField[maxPlayers];
+    private JLabel [] playerIcons = new JLabel[maxPlayers];
+    private JButton start;
     
     public static WaitingRoomGUI getInstance() throws IOException, URISyntaxException{
         if(instance == null){
@@ -97,6 +101,7 @@ public class WaitingRoomGUI {
             players[i].setFont(nameFont);
             players[i].setBackground(c);
             players[i].setBorder(BorderFactory.createEmptyBorder());
+            players[i].setEditable(false);
             cons.fill = GridBagConstraints.NONE;
             cons.gridy = startY;
             cons.gridx = startX;
@@ -116,7 +121,27 @@ public class WaitingRoomGUI {
             }
             
         }
+        //if(PDLClient.instance.isMaster()){
+            
+        URI url = getClass().getResource("/images/startbutton.png").toURI();
+        File startF = new File(url);
+        BufferedImage startImg = ImageIO.read(startF);
+        start = new JButton(new ImageIcon(startImg));
+        start.setBorder(BorderFactory.createEmptyBorder());
+        start.setContentAreaFilled(false);
+        start.addActionListener(new StartButton());
+        //CREATE ACTIONLISTENER HERE YO
+        //start.addActionListener(actionL);
+        cons.fill = GridBagConstraints.NONE;
+        cons.gridy = startY + 2;
+        cons.gridx = 0;
+        cons.ipady = 0;
         
+        //cons.weight = 1;
+        panel.add(start, cons);
+            
+        start.setVisible(false);
+        start.setEnabled(false);
         
         frame.add(panel);
         frame.setVisible(false);
@@ -131,6 +156,16 @@ public class WaitingRoomGUI {
             players[i].setText(names.get(i));
             playerIcons[i].setIcon(new ImageIcon(icons.get(i).getScaledInstance(56, 56, 0)));            
         }
+        if(PDLClient.instance.isMaster()){
+            start.setVisible(true);
+            start.setEnabled(true);
+        }
     }
-     
+    public class StartButton implements ActionListener{
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            PDLClient.instance.getMasterClient().startGame();
+        }
+    }     
 }
