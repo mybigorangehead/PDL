@@ -68,6 +68,7 @@ public class PDLClient {
         SelectRoomGUI sGui = SelectRoomGUI.getInstance();
         WaitingRoomGUI wait =  WaitingRoomGUI.getInstance();
         DrawingPageGUI draw = DrawingPageGUI.getInstance();
+        WaitingPage waiting = WaitingPage.getInstance();
         
     }
     
@@ -308,6 +309,24 @@ public class PDLClient {
                 System.out.println("Couldnt recieve phrase");
             }
         }
+        public void sendGameImage(BufferedImage img){
+            try {
+                System.out.println("sending picture");
+                _socketWriter.println("PICTURE");
+                _socketWriter.flush();
+                //read my icon into byte stream
+                ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
+                ImageIO.write(img, "PNG", byteOut);
+                
+                //get image size, write both size and image to master client
+                byte [] imgSize = ByteBuffer.allocate(4).putInt(byteOut.size()).array();
+                _toMaster.getOutputStream().write(imgSize);
+                _toMaster.getOutputStream().write(byteOut.toByteArray());
+                _toMaster.getOutputStream().flush();
+            } catch (IOException ex) {
+                System.out.println("Could not send image.");
+            }
+        }
     }
     public boolean isMaster(){
         return _isMaster;
@@ -319,6 +338,11 @@ public class PDLClient {
     public PDLMasterClient getMasterClient(){
         return _master;
     }
-    
+    public void sendGameImage(BufferedImage img){
+        _gameThread.sendGameImage(img);
+    }
+    public void sendGamePhrase(String p){
+        
+    }
    
 }

@@ -36,18 +36,23 @@ public class PDLMasterClient{
     
     private ServerSocket _master;
     private String _roomCode;
-    private int listenPort = 3500;
+    private int _listenPort = 3500;
     
-    private boolean inGame = false;
+    private boolean _inGame = false;
     
-    
+    //IN GAME TRACKERS
+    private int _submissions = 0;
+    private int _curRound = 0;
+    private int _playerCount;
+    private boolean _isDrawRound = true;
     private PictureLane [] _picLanes;
+    
     public PDLMasterClient(String room) throws IOException{
         _roomCode = room;
         PDLClient.instance.setCurrentRoom(_roomCode);
         PDLClient.instance.addPlayer(PDLClient.instance.getPlayerName(), PDLClient.instance.getPlayerIcon());
         _players = new ArrayList<>();
-        _master = new ServerSocket(listenPort);
+        _master = new ServerSocket(_listenPort);
         _lobby = new LobbyWait();
         _lobby.start();
     }
@@ -61,7 +66,7 @@ public class PDLMasterClient{
             Socket incomingPlayer = null;
            // BufferedReader socketReader = new BufferedReader(new InputStreamReader(PDLClient.instance.toServer.getInputStream()));
             System.out.println("Waiting for players");
-            while(!inGame){
+            while(!_inGame){
                 try {
                     incomingPlayer = _master.accept();
                     addPlayerToGame(incomingPlayer);
@@ -123,7 +128,7 @@ public class PDLMasterClient{
             }
             
             //start thread for the new player
-            PlayerThread newPlayer = new PlayerThread(s, _players.size());
+            PlayerThread newPlayer = new PlayerThread(s, _players.size()+1);
             _players.add(newPlayer);
            
             
@@ -134,7 +139,11 @@ public class PDLMasterClient{
     }
     public void startGame(){
         //do a countdown here probs
-        _picLanes = new PictureLane[_players.size()];
+        _picLanes = new PictureLane[_players.size()+1];
+        _playerCount = _players.size()+1;
+        for(int i = 0; i<_playerCount; i++){
+            _picLanes[i] = new PictureLane(); 
+        }
         //0 is the master clients ID, he does the 0 lane
         _picLanes[0].addPhrase("'Phrase to draw'");
         //tell everyone the game is starting
@@ -142,15 +151,62 @@ public class PDLMasterClient{
             _players.get(i).startGame();
         }
         //tell server game has started
-        inGame = true;
+        _inGame = true;
+        //+1 for mastr
+        
         
         WaitingRoomGUI.instance.frame.setVisible(false);
         DrawingPageGUI.instance.frame.setVisible(true);
-        DrawingPageGUI.instance.setPhrase("'Phrase to draw'");
-        
-        
+        DrawingPageGUI.instance.setPhrase("'Phrase to draw'");       
     }
-    
+    void endGame(){
+        //should have complete pic lanes at this point
+    }
+    void countSubmission(){
+        _submissions++;
+        System.out.println("Recieved something");
+        //if we recieve a pic from everybody, go to next round
+        if(_submissions == _playerCount && goToNextRound()){
+            System.out.println("next round");
+            _submissions = 0;
+            nextRound();
+            //tell everyone what to do for next round
+            for(int i =0; i <_players.size(); i++){
+                _players.get(i).nextRound();
+            }
+            
+            //need a next round thi
+        }
+    }
+    boolean goToNextRound(){
+        _curRound++;
+        if(_curRound == _playerCount){
+            endGame();
+            return false;
+        }
+        else{
+            return true;
+        }
+    }
+    void nextRound(){
+        //first round is drawRound
+        _isDrawRound = !_isDrawRound;
+        if(_isDrawRound){
+            DrawingPageGUI.instance.frame.setVisible(true);
+            WaitingPage.instance.frame.setVisible(false);
+        }
+        else{
+            
+        }
+    }
+    public void submitGamePic(BufferedImage img){
+        _picLanes[_curRound%_playerCount].addImage(img);
+        countSubmission();
+    }
+    public void sumbitGamePhrase(String p){
+        _picLanes[_curRound%_playerCount].addPhrase(p);
+        countSubmission();
+    }
     /*
     * This thread listens to players throughout the game
     * Sends to added players when we in game    
@@ -159,14 +215,14 @@ public class PDLMasterClient{
         private Socket _toPlayer;
         private BufferedReader _socketReader;
         private PrintWriter _socketWriter;
-        private boolean _isDrawRound = true;
+        
         private int _id;
-        private int _curRound = 0;
         public PlayerThread(Socket s, int playerId){
             try {
                 _toPlayer = s;
                 _socketReader = new BufferedReader(new InputStreamReader(s.getInputStream()));
                 _socketWriter = new PrintWriter(s.getOutputStream());
+                start();
             } catch (IOException ex) {
                 System.out.println();
             }
@@ -176,8 +232,12 @@ public class PDLMasterClient{
             while(true){
                 try {
                     String command = _socketReader.readLine();
+                    System.out.println(command);
                     if(command.startsWith("PICTURE")){
                         recieveImage();
+                    }
+                    else if(command.startsWith("PHRASE")){
+                        recievePhrase();
                     }
                 } catch (IOException ex) {
                     System.out.println("failed to read from player");
@@ -224,11 +284,15 @@ public class PDLMasterClient{
                 
                 BufferedImage playerIcon = ImageIO.read(new ByteArrayInputStream(imgArr));
                 //add image here
-                
-                
+                _picLanes[(_curRound + _id)% _playerCount].addImage(playerIcon);
+                countSubmission();
             } catch (IOException ex) {
                 System.out.println("Couldn't recieve image.");
             }
+        }
+        
+        void recievePhrase(){
+            
         }
         public void startGame(){
             _curRound = 0;
@@ -261,7 +325,7 @@ public class PDLMasterClient{
                 //SEND IMAGE HERE
             }       
             _curRound++;
-            _isDrawRound = !_isDrawRound;
+            
         }
     }
 }

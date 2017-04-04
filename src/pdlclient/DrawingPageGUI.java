@@ -115,6 +115,7 @@ public class DrawingPageGUI {
         cons.gridx = 0;
         cons.ipady = 20;
         panel.add(submit, cons);
+        submit.addActionListener(new SubmitButton());
         frame.add(panel);
 
         frame.setVisible(false);
@@ -122,6 +123,24 @@ public class DrawingPageGUI {
     }
     public void setPhrase(String p){
         phrase.setText(p);
-    }    
+    }
+
+    public class SubmitButton implements ActionListener{
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if(PDLClient.instance.isMaster()){
+                PDLClient.instance.getMasterClient().submitGamePic(draw.getImage());
+                frame.setVisible(false);
+                WaitingPage.instance.frame.setVisible(true);
+            }
+            else{
+                PDLClient.instance.sendGameImage(draw.getImage());
+                frame.setVisible(false);
+                WaitingPage.instance.frame.setVisible(true);
+            }
+        }
+        
+    }
 }
 
