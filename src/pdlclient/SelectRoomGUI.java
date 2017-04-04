@@ -75,7 +75,7 @@ public class SelectRoomGUI {
         //cons.weight = 1;
         panel.add(play, cons);
         
-        Font font1 = new Font("Comic Sans MS", Font.BOLD, 28);
+        Font font1 = new Font("Comic Sans MS", Font.BOLD, 16);
         
         
         //NickName text field
@@ -85,7 +85,7 @@ public class SelectRoomGUI {
         cons.fill = GridBagConstraints.NONE;
         cons.gridy = 1;
         cons.gridx = 0;
-        cons.ipady = 20;
+        cons.ipady = 0;
         cons.ipadx = 0;
         panel.add(code, cons);
         
@@ -130,11 +130,8 @@ public class SelectRoomGUI {
             }
             else if(e.getSource() == join){
                 PDLClient.instance.joinRoom(code.getText());
-            }
-            
-        }        
-        
-        
+            }            
+        }         
     }
 }
 

@@ -3,8 +3,18 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
+<<<<<<< HEAD
             <file>file:/E:/Ursinus%20Spring%202017/Networking/PDL/src/pdlclient/PDLClient.java</file>
             <file>file:/E:/Ursinus%20Spring%202017/Networking/PDL/src/pdlclient/PDLMasterClient.java</file>
+=======
+            <file>file:/C:/Users/Josh/Documents/Josh/Ursinus%20Spring%202017/Networking/PDLClient/src/pdlclient/HomeGUI.java</file>
+            <file>file:/C:/Users/Josh/Documents/Josh/Ursinus%20Spring%202017/Networking/PDLClient/src/pdlclient/DrawPanel.java</file>
+            <file>file:/C:/Users/Josh/Documents/Josh/Ursinus%20Spring%202017/Networking/PDLClient/src/pdlclient/WaitingRoomGUI.java</file>
+            <file>file:/C:/Users/Josh/Documents/Josh/Ursinus%20Spring%202017/Networking/PDLClient/src/pdlclient/PDLClient.java</file>
+            <file>file:/C:/Users/Josh/Documents/Josh/Ursinus%20Spring%202017/Networking/PDLClient/src/pdlclient/SelectRoomGUI.java</file>
+            <file>file:/C:/Users/Josh/Documents/Josh/Ursinus%20Spring%202017/Networking/PDLClient/src/pdlclient/DrawingPageGUI.java</file>
+            <file>file:/C:/Users/Josh/Documents/Josh/Ursinus%20Spring%202017/Networking/PDLClient/src/pdlclient/PDLMasterClient.java</file>
+>>>>>>> ddf79b07832e9d84160ee46775f87d7996c6e095
         </group>
     </open-files>
 </project-private>
