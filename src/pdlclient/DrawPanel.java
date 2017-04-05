@@ -47,6 +47,8 @@ public class DrawPanel extends JComponent {
      //   imageDest = getClass().getResource("/images/").toURI();
         size = s;
         super.setSize(s, s);
+        //super.setPreferredSize(new Dimension(s, s));
+        //super.setPreferredSize(preferredSize);
         
         setDoubleBuffered(false);
         addMouseListener(new MouseAdapter(){
@@ -93,11 +95,13 @@ public class DrawPanel extends JComponent {
     
     //methods users can use
     public void clear(){
-        g2.setPaint(Color.white);
-        //cover thing in white
-        g2.fillRect(0, 0, size, size);
-        g2.setPaint(Color.black);
-        repaint();
+        if(g2!= null){       
+            g2.setPaint(Color.white);
+            //cover thing in white
+            g2.fillRect(0, 0, size, size);
+            g2.setPaint(Color.black);
+            repaint();
+        }
     }
     
     //used for setting different colors

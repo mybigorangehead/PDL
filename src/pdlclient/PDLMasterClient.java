@@ -11,6 +11,7 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
@@ -30,6 +31,7 @@ public class PDLMasterClient{
     
     private ArrayList<PlayerThread> _players;
     private LobbyWait _lobby;
+    private ServerThread _toServer;
     //private InGameThread gameManager;
     //may need a third thread for the server
     
@@ -46,15 +48,17 @@ public class PDLMasterClient{
     private int _playerCount;
     private boolean _isDrawRound = true;
     private PictureLane [] _picLanes;
-    
-    public PDLMasterClient(String room) throws IOException{
+    private phraseGenerator _generator;
+    public PDLMasterClient(String room, Socket toServer) throws IOException{
         _roomCode = room;
+        _generator = new phraseGenerator();
         PDLClient.instance.setCurrentRoom(_roomCode);
         PDLClient.instance.addPlayer(PDLClient.instance.getPlayerName(), PDLClient.instance.getPlayerIcon());
         _players = new ArrayList<>();
         _master = new ServerSocket(_listenPort);
         _lobby = new LobbyWait();
         _lobby.start();
+        _toServer = new ServerThread(toServer);
     }
     
    
@@ -144,8 +148,9 @@ public class PDLMasterClient{
         for(int i = 0; i<_playerCount; i++){
             _picLanes[i] = new PictureLane(); 
         }
+        String randomP = _generator.randomizer();
         //0 is the master clients ID, he does the 0 lane
-        _picLanes[0].addPhrase("'Phrase to draw'");
+        _picLanes[0].addPhrase(randomP);
         //tell everyone the game is starting
         for(int i =0; i<_players.size(); i++){
             _players.get(i).startGame();
@@ -157,10 +162,15 @@ public class PDLMasterClient{
         
         WaitingRoomGUI.instance.frame.setVisible(false);
         DrawingPageGUI.instance.frame.setVisible(true);
-        DrawingPageGUI.instance.setPhrase("'Phrase to draw'");       
+        DrawingPageGUI.instance.setPhrase(randomP);       
     }
     void endGame(){
         //should have complete pic lanes at this point
+        System.out.println("game over");
+        EndGameGUI.instance.frame.setVisible(true);
+        for(int i = 0; i <_picLanes.length; i++){
+            EndGameGUI.instance.addLane(_picLanes[i]);
+        }
     }
     void countSubmission(){
         _submissions++;
@@ -170,10 +180,7 @@ public class PDLMasterClient{
             System.out.println("next round");
             _submissions = 0;
             nextRound();
-            //tell everyone what to do for next round
-            for(int i =0; i <_players.size(); i++){
-                _players.get(i).nextRound();
-            }
+            
             
             //need a next round thi
         }
@@ -193,18 +200,29 @@ public class PDLMasterClient{
         _isDrawRound = !_isDrawRound;
         if(_isDrawRound){
             DrawingPageGUI.instance.frame.setVisible(true);
+            DrawingPageGUI.instance.clearImage();
+            DrawingPageGUI.instance.setPhrase(_picLanes[(_playerCount - _curRound + 0)% _playerCount].getLastPhrase());
             WaitingPage.instance.frame.setVisible(false);
         }
         else{
+            PhrasePageGUI.instance.frame.setVisible(true);
+            PhrasePageGUI.instance.clearPhrase();
             
+            PhrasePageGUI.instance.setImage(_picLanes[(_playerCount - _curRound + 0)% _playerCount].getLastImage());
+            WaitingPage.instance.frame.setVisible(false);
+        }
+        //tell everyone what to do for next round
+        for(int i =0; i <_players.size(); i++){
+            _players.get(i).nextRound();
         }
     }
     public void submitGamePic(BufferedImage img){
-        _picLanes[_curRound%_playerCount].addImage(img);
+        System.out.println("Adding image to lane " + (_playerCount - _curRound + 0)% _playerCount);
+        _picLanes[(_playerCount - _curRound)%_playerCount].addImage(img);
         countSubmission();
     }
-    public void sumbitGamePhrase(String p){
-        _picLanes[_curRound%_playerCount].addPhrase(p);
+    public void submitGamePhrase(String p){
+        _picLanes[(_playerCount - _curRound)%_playerCount].addPhrase(p);
         countSubmission();
     }
     /*
@@ -222,6 +240,7 @@ public class PDLMasterClient{
                 _toPlayer = s;
                 _socketReader = new BufferedReader(new InputStreamReader(s.getInputStream()));
                 _socketWriter = new PrintWriter(s.getOutputStream());
+                _id = playerId;
                 start();
             } catch (IOException ex) {
                 System.out.println();
@@ -284,7 +303,8 @@ public class PDLMasterClient{
                 
                 BufferedImage playerIcon = ImageIO.read(new ByteArrayInputStream(imgArr));
                 //add image here
-                _picLanes[(_curRound + _id)% _playerCount].addImage(playerIcon);
+                System.out.println("Adding image to lane " + (_playerCount - _curRound + _id)% _playerCount);
+                _picLanes[(_playerCount - _curRound + _id)% _playerCount].addImage(playerIcon);
                 countSubmission();
             } catch (IOException ex) {
                 System.out.println("Couldn't recieve image.");
@@ -292,7 +312,17 @@ public class PDLMasterClient{
         }
         
         void recievePhrase(){
-            
+            try {
+                String phrase = _socketReader.readLine();
+                _picLanes[(_playerCount - _curRound + _id)% _playerCount].addPhrase(phrase);
+                countSubmission();
+            } catch (IOException ex) {
+                System.out.println("couldnt recieve phrase.");
+            }
+        }
+        void sendPhrase(String p){
+            _socketWriter.println(p);
+            _socketWriter.flush();
         }
         public void startGame(){
             _curRound = 0;
@@ -300,13 +330,13 @@ public class PDLMasterClient{
             _socketWriter.println("START");
             _socketWriter.flush();
             
-            
+            String randomP = _generator.randomizer();
             //send them the phrase
-            _socketWriter.println("'Phrase to Draw'");
+            _socketWriter.println(randomP);
             _socketWriter.flush();
             
             //everyones first phrase to add is given by the order they were added
-            _picLanes[_id].addPhrase(("'Phrase to Draw"));
+            _picLanes[_id].addPhrase(randomP);
             
             //set master client in game thread MAYBE
         }
@@ -315,17 +345,36 @@ public class PDLMasterClient{
             if(_isDrawRound){
                 _socketWriter.println("DRAW");
                 _socketWriter.flush();
-                
-                
                 //send correct phrase here
+                sendPhrase(_picLanes[(_playerCount - _curRound + _id)% _playerCount].getLastPhrase());
             }else{
                 _socketWriter.println("PHRASE");
                 _socketWriter.flush();
             
                 //SEND IMAGE HERE
+                sendImage(_picLanes[(_playerCount - _curRound + _id)% _playerCount].getLastImage());
             }       
-            _curRound++;
+           
             
+        }
+    }
+    public class ServerThread extends Thread{
+        Socket _toServer;
+        BufferedReader _socketReader;
+        public ServerThread(Socket s) throws IOException{
+            _toServer = s;
+            _socketReader = new BufferedReader(new InputStreamReader(_toServer.getInputStream()));
+        }
+        
+        @Override 
+        public void run(){
+            while(true){
+                try {
+                    String command = _socketReader.readLine();
+                } catch (IOException ex) {
+                    Logger.getLogger(PDLMasterClient.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
         }
     }
 }
