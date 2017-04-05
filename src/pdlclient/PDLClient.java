@@ -87,7 +87,7 @@ public class PDLClient {
     }
     public void setMaster(String roomCode) throws IOException{
         _isMaster = true;
-        _master = new PDLMasterClient(roomCode);
+        _master = new PDLMasterClient(roomCode, _toServer);
     }
     public void setCurrentRoom(String code){
         _currentRoom  = code;
@@ -141,9 +141,6 @@ public class PDLClient {
             System.out.println("here");
             String myRoomCode = socketReader.readLine();
             System.out.println(myRoomCode);
-
-            socketReader.close();
-            socketWriter.close();
             SelectRoomGUI.instance.frame.setVisible(false);
 
             WaitingRoomGUI.instance.frame.setVisible(true);

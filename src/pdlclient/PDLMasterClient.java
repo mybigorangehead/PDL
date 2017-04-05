@@ -11,6 +11,7 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
@@ -30,6 +31,7 @@ public class PDLMasterClient{
     
     private ArrayList<PlayerThread> _players;
     private LobbyWait _lobby;
+    private ServerThread _toServer;
     //private InGameThread gameManager;
     //may need a third thread for the server
     
@@ -47,7 +49,7 @@ public class PDLMasterClient{
     private boolean _isDrawRound = true;
     private PictureLane [] _picLanes;
     private phraseGenerator _generator;
-    public PDLMasterClient(String room) throws IOException{
+    public PDLMasterClient(String room, Socket toServer) throws IOException{
         _roomCode = room;
         _generator = new phraseGenerator();
         PDLClient.instance.setCurrentRoom(_roomCode);
@@ -56,7 +58,7 @@ public class PDLMasterClient{
         _master = new ServerSocket(_listenPort);
         _lobby = new LobbyWait();
         _lobby.start();
-        
+        _toServer = new ServerThread(toServer);
     }
     
    
@@ -354,6 +356,25 @@ public class PDLMasterClient{
             }       
            
             
+        }
+    }
+    public class ServerThread extends Thread{
+        Socket _toServer;
+        BufferedReader _socketReader;
+        public ServerThread(Socket s) throws IOException{
+            _toServer = s;
+            _socketReader = new BufferedReader(new InputStreamReader(_toServer.getInputStream()));
+        }
+        
+        @Override 
+        public void run(){
+            while(true){
+                try {
+                    String command = _socketReader.readLine();
+                } catch (IOException ex) {
+                    Logger.getLogger(PDLMasterClient.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
         }
     }
 }
