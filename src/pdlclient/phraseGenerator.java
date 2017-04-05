@@ -5,16 +5,12 @@
  */
 package pdlclient;
 
-import java.awt.List;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.FileReader;
-import java.io.FileWriter;
+import java.io.File;
+import java.util.Scanner;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Random;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
 
 /**
  *
@@ -29,15 +25,15 @@ public class phraseGenerator {
         String fileName = "pictionary.txt";        
         String phrase = null;
         // wrap a BufferedReader around FileReader
-        BufferedReader bufferedReader = new BufferedReader(new FileReader(fileName));
+        Scanner in = new Scanner(new File(fileName));
 
         // read from the file and add to arraylist phrases
-        while ((phrase = bufferedReader.readLine()) != null){
-            phrases.add(phrase);
+        while (in.hasNextLine()){
+            phrases.add(in.nextLine());
         }
   
         // close the BufferedReader when we finish reading
-        bufferedReader.close();
+        in.close();
     }
     
     public String randomizer(){

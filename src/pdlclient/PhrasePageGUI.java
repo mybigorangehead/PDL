@@ -19,27 +19,27 @@ import java.net.URISyntaxException;
  *
  * @author yayang
  */
-public class DrawingPageGUI {
+public class PhrasePageGUI {
     /*public static void main(String[] args) throws IOException, URISyntaxException 
     {
         DrawingPageGUI DrawingPage = new DrawingPageGUI();
         DrawingPage = getInstance();
     }*/
     
-    public static DrawingPageGUI instance;
+    public static PhrasePageGUI instance;
     JFrame frame;
-    private DrawPanel draw;
+    private JLabel img;
     private JTextField phrase;
     private JButton submit;
-    public static DrawingPageGUI getInstance() throws IOException, URISyntaxException{
+    public static PhrasePageGUI getInstance() throws IOException, URISyntaxException{
         if(instance == null){
-            instance = new DrawingPageGUI();
+            instance = new PhrasePageGUI();
         }
         return instance;
     }
     //constructs the home page interface
-    private DrawingPageGUI() throws IOException, URISyntaxException{
-        frame = new JFrame("Drawing Page");
+    private PhrasePageGUI() throws IOException, URISyntaxException{
+        frame = new JFrame("Phrase Page");
         Color c  = new Color(99, 194, 255);
         frame.getContentPane().setBackground(c);
         frame.setSize(1024, 900);
@@ -51,13 +51,13 @@ public class DrawingPageGUI {
         
         
         //Phrase text field
-        phrase = new JTextField("Phrase", 20);
-        phrase.setEditable(false);
+        phrase = new JTextField("Enter Phrase here..", 20);
+        phrase.setEditable(true);
         //phrase.setFont(font1);
         phrase.setBorder(BorderFactory.createEmptyBorder());
         phrase.setBackground(Color.white);
         cons.fill = GridBagConstraints.NONE;
-        cons.gridy = 0;
+        cons.gridy = 1;
         cons.gridx = 0;
         cons.ipady = 0;
         cons.ipadx = 0;
@@ -70,7 +70,7 @@ public class DrawingPageGUI {
         BufferedImage n = ImageIO.read(nPic);
         JLabel nnbg = new JLabel(new ImageIcon(n.getScaledInstance(256, 32, 0)));
         cons.fill = GridBagConstraints.NONE;
-        cons.gridy =0;
+        cons.gridy =1;
         cons.gridx = 0;    
         cons.ipady = 10;
         panel.add(nnbg, cons);
@@ -80,22 +80,14 @@ public class DrawingPageGUI {
         
         //the drawing box
         int size = 256;
-        draw = new DrawPanel(size);
+        img = new JLabel(new ImageIcon());
         cons.fill = GridBagConstraints.NONE;
-        cons.ipadx = size;
-        cons.ipady = size;
+
         cons.gridx = 0;
-        cons.gridy = 1;      
+        cons.gridy = 0;      
         // cons.weightx = 5;
-        panel.add(draw, cons);
-        //add color picker
-        JPanel colors = draw.getColorPanel(16);
-        cons.fill = GridBagConstraints.NONE;
-        cons.ipadx = 0;
-        cons.ipady = 0;
-        cons.gridx = 0;
-        cons.gridy = 2;
-        panel.add(colors, cons);
+        panel.add(img, cons);
+       
         //create a font
         Font font1 = new Font("Comic Sans MS", Font.BOLD, 14);
         
@@ -121,28 +113,30 @@ public class DrawingPageGUI {
         frame.setVisible(false);
        // frame.pack();
     }
-    public void setPhrase(String p){
-        phrase.setText(p);
+    public void setImage(BufferedImage i){
+        img.setIcon(new ImageIcon(i));
     }
-    public void clearImage(){
-        draw.clear();
+    public void clearPhrase(){
+        phrase.setText("");
     }
+
     public class SubmitButton implements ActionListener{
 
         @Override
         public void actionPerformed(ActionEvent e) {
             if(PDLClient.instance.isMaster()){
-                PDLClient.instance.getMasterClient().submitGamePic(draw.getImage());
+                
                 frame.setVisible(false);
                 WaitingPage.instance.frame.setVisible(true);
+                PDLClient.instance.getMasterClient().submitGamePhrase(phrase.getText());
             }
             else{
-                PDLClient.instance.sendGameImage(draw.getImage());
+                
                 frame.setVisible(false);
                 WaitingPage.instance.frame.setVisible(true);
+                PDLClient.instance.sendGamePhrase(phrase.getText());
             }
         }
         
     }
 }
-

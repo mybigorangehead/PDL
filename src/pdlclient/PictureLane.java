@@ -26,6 +26,18 @@ public class PictureLane {
     public void addImage(BufferedImage img){
         _images.add(img);
     }
+    public BufferedImage getLastImage(){
+        return _images.get(_images.size()-1);
+    }
+    public String getLastPhrase(){
+        return _phrases.get(_phrases.size()-1);
+    }
+     public ArrayList<BufferedImage> getImages(){
+        return _images;
+    }
+    public ArrayList<String> getPhrases(){
+        return _phrases;
+    }
     
     
 }

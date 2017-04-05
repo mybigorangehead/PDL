@@ -69,7 +69,8 @@ public class PDLClient {
         WaitingRoomGUI wait =  WaitingRoomGUI.getInstance();
         DrawingPageGUI draw = DrawingPageGUI.getInstance();
         WaitingPage waiting = WaitingPage.getInstance();
-        
+        PhrasePageGUI phrase = PhrasePageGUI.getInstance();
+        EndGameGUI end = EndGameGUI.getInstance();
     }
     
     public void setPlayerName(String name){
@@ -233,7 +234,13 @@ public class PDLClient {
                         recieveNewPlayer();
                     }
                     else if(command.equals("START")){
-                        startGame();
+                        setUpDrawPage();
+                    }
+                    else if(command.equals("DRAW")){
+                        setUpDrawPage();
+                    }
+                    else if(command.equals("PHRASE")){
+                        setUpPhrasePage();
                     }
                 }                
             } catch (IOException ex) {
@@ -294,7 +301,7 @@ public class PDLClient {
                 System.out.println("Couldn't recieve new player");
             }
         }    
-        void startGame(){
+        void setUpDrawPage(){
         
             try {
                 String toDraw = _socketReader.readLine();
@@ -304,7 +311,9 @@ public class PDLClient {
                 
                 //enable drawing page
                 DrawingPageGUI.instance.frame.setVisible(true);
+                DrawingPageGUI.instance.clearImage();
                 DrawingPageGUI.instance.setPhrase(toDraw);
+                WaitingPage.instance.frame.setVisible(false);
             } catch (IOException ex) {
                 System.out.println("Couldnt recieve phrase");
             }
@@ -327,6 +336,34 @@ public class PDLClient {
                 System.out.println("Could not send image.");
             }
         }
+        public void setUpPhrasePage(){
+            try {
+                //read image
+                byte[] sizeArr = new byte[4];
+                _toMaster.getInputStream().read(sizeArr);
+                int size = ByteBuffer.wrap(sizeArr).asIntBuffer().get();
+                
+                byte[] imgArr = new byte[size];
+                _toMaster.getInputStream().read(imgArr);
+                
+                BufferedImage playerIcon = ImageIO.read(new ByteArrayInputStream(imgArr));
+                //display proper gui
+                WaitingPage.instance.frame.setVisible(false);
+                PhrasePageGUI.instance.frame.setVisible(true);
+                PhrasePageGUI.instance.clearPhrase();
+                PhrasePageGUI.instance.setImage(playerIcon);
+                
+               
+            } catch (IOException ex) {
+                System.out.println("Couldn't recieve image.");
+            }
+        }
+        public void sendGamePhrase(String p){
+            _socketWriter.println("PHRASE");
+            _socketWriter.flush();
+            _socketWriter.println(p);
+            _socketWriter.flush();
+        }
     }
     public boolean isMaster(){
         return _isMaster;
@@ -342,7 +379,7 @@ public class PDLClient {
         _gameThread.sendGameImage(img);
     }
     public void sendGamePhrase(String p){
-        
+        _gameThread.sendGamePhrase(p);
     }
    
 }
