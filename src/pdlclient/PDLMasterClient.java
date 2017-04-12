@@ -38,7 +38,7 @@ public class PDLMasterClient{
     
     private ServerSocket _master;
     private String _roomCode;
-    private int _listenPort = 3500;
+    private int _listenPort = 2999;
     
     private boolean _inGame = false;
     

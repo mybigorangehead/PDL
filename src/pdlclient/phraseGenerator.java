@@ -6,10 +6,14 @@
 package pdlclient;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.Scanner;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 /**
@@ -20,20 +24,26 @@ public class phraseGenerator {
     private int randNum;
     private ArrayList<String> phrases = new ArrayList<>();
     
-    public phraseGenerator() throws IOException{
-        // The name of the file to open
-        String fileName = "pictionary.txt";        
-        String phrase = null;
-        // wrap a BufferedReader around FileReader
-        Scanner in = new Scanner(new File(fileName));
-
-        // read from the file and add to arraylist phrases
-        while (in.hasNextLine()){
-            phrases.add(in.nextLine());
+    public phraseGenerator() {
+        try {
+            // The name of the file to open
+            String fileName = "pictionary.txt";
+            InputStream in = getClass().getResourceAsStream("pictionary.txt");
+            
+            String phrase = null;
+            // wrap a BufferedReader around FileReader
+            Scanner file = new Scanner(in);
+            System.out.println("here");
+            // read from the file and add to arraylist phrases
+            while (file.hasNextLine()){
+                phrases.add(file.nextLine());
+            }
+            
+            // close the BufferedReader when we finish reading
+            file.close();
+        } catch (Exception ex) {
+            Logger.getLogger(phraseGenerator.class.getName()).log(Level.SEVERE, null, ex);
         }
-  
-        // close the BufferedReader when we finish reading
-        in.close();
     }
     
     public String randomizer(){

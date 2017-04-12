@@ -112,10 +112,11 @@ public class PDLClient {
             System.out.println("Couldn't disconnect from server");
         }
     }
-    int M_PORT = 3500;
+    int M_PORT = 2999;
     public void connectToMasterClient(String ipAdd){
         try {        
             Socket m = new Socket(ipAdd, M_PORT);
+            System.out.println("here");
             _gameThread = new GameThread(m);
             _gameThread.start();
             System.out.println("connected to master client");
