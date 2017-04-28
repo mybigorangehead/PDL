@@ -37,10 +37,11 @@ import javax.swing.JTextField;
  */
 public class SelectRoomGUI {
     public static SelectRoomGUI instance = null;
-    JTextField code;
-    JFrame frame;
-    JButton play;
-    JButton join;
+    private JTextField code;
+   // JFrame frame;
+    private JButton play;
+    private JButton join;
+    private JPanel myPanel;
      public static SelectRoomGUI getInstance() throws IOException, URISyntaxException{
         if(instance == null){
             instance = new SelectRoomGUI();
@@ -48,16 +49,17 @@ public class SelectRoomGUI {
         return instance;
     }
     private SelectRoomGUI() throws IOException, URISyntaxException{
-        frame = new JFrame("Select Room");
+        /*frame = new JFrame("Select Room");
          Color c  = new Color(99, 194, 255);
         frame.getContentPane().setBackground(c);
         frame.setSize(1024, 900);
         frame.setLocationRelativeTo(null);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);*/
         
-        JPanel panel = new JPanel(new GridBagLayout());
+        myPanel = new JPanel(new GridBagLayout());
         GridBagConstraints cons = new GridBagConstraints();
-        panel.setBackground(c);
+        Color c  = new Color(99, 194, 255);
+        myPanel.setBackground(c);
          //QUICK PLAY BUTTON
         URI qpURL = getClass().getResource("/images/createroom.png").toURI();
         File qpPic = new File(qpURL);
@@ -73,7 +75,7 @@ public class SelectRoomGUI {
         ActionListener actionL = new PlayButton();
         play.addActionListener(actionL);
         //cons.weight = 1;
-        panel.add(play, cons);
+        myPanel.add(play, cons);
         
         Font font1 = new Font("Comic Sans MS", Font.BOLD, 16);
         
@@ -87,7 +89,7 @@ public class SelectRoomGUI {
         cons.gridx = 0;
         cons.ipady = 0;
         cons.ipadx = 0;
-        panel.add(code, cons);
+        myPanel.add(code, cons);
         
         //NICKNAME BACKGROUND
         URI nURL = getClass().getResource("/images/nnbg.png").toURI();
@@ -98,7 +100,7 @@ public class SelectRoomGUI {
         cons.gridy =1;
         cons.gridx = 0; 
         cons.ipady = 20;
-        panel.add(nnbg, cons);
+        myPanel.add(nnbg, cons);
         
         URI jURL = getClass().getResource("/images/joinroom.png").toURI();
         File jPic = new File(jURL);
@@ -113,13 +115,15 @@ public class SelectRoomGUI {
         cons.gridx = 0;
         cons.ipady = 0;
         //cons.weight = 1;
-        panel.add(join, cons);
+        myPanel.add(join, cons);
         
-        frame.add(panel);
+     //   frame.add(panel);
 
-       frame.setVisible(false);
+      // frame.setVisible(false);
     }
-    
+    public JPanel getPanel(){
+        return myPanel;
+    }
     final String CREATE_CODE = "210";
     final String JOIN_CODE = "240";
     public class PlayButton implements ActionListener{

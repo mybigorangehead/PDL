@@ -21,8 +21,8 @@ import javax.swing.JTextField;
  */
 public class WaitingPage {
     public static WaitingPage instance;
-    JFrame frame;
-    
+    //JFrame frame;
+    private JPanel panel;
     public static WaitingPage getInstance() throws IOException{
         if(instance == null){
             instance = new WaitingPage();
@@ -30,14 +30,14 @@ public class WaitingPage {
         return instance;
     }
     private WaitingPage() throws IOException{
-        frame = new JFrame("Waiting...");
+       // frame = new JFrame("Waiting...");
         Color c  = new Color(99, 194, 255);
-        frame.getContentPane().setBackground(c);
+        /*frame.getContentPane().setBackground(c);
         frame.setSize(1024, 900);
         frame.setLocationRelativeTo(null);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);*/
        
-        JPanel panel = new JPanel(new GridBagLayout());
+        panel = new JPanel(new GridBagLayout());
         GridBagConstraints cons = new GridBagConstraints();
         panel.setBackground(c);
         
@@ -58,8 +58,10 @@ public class WaitingPage {
         
         
         
-        frame.add(panel);
-        frame.setVisible(false);
+        //frame.add(panel);
+        //frame.setVisible(false);
     }
-     
+    public JPanel getPanel(){
+        return panel;
+    }
 }

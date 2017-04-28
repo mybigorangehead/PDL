@@ -16,6 +16,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.logging.Level;
@@ -38,7 +39,7 @@ public class PDLMasterClient{
     
     private ServerSocket _master;
     private String _roomCode;
-    private int _listenPort = 2999;
+    private int _listenPort = 50001;
     
     private boolean _inGame = false;
     
@@ -49,6 +50,7 @@ public class PDLMasterClient{
     private boolean _isDrawRound = true;
     private PictureLane [] _picLanes;
     private phraseGenerator _generator;
+    private int maxPlayers = 5;
     public PDLMasterClient(String room, Socket toServer) throws IOException{
         _roomCode = room;
         _generator = new phraseGenerator();
@@ -135,18 +137,22 @@ public class PDLMasterClient{
             PlayerThread newPlayer = new PlayerThread(s, _players.size()+1);
             _players.add(newPlayer);
            
-            
+            //if our lobby is full, tell the server to not send us any more players
+            if(_players.size() == maxPlayers){
+                _toServer.ChangeGameState("DENY");
+            }
             
         }catch(Exception e){
             System.out.println("error");
         }
     }
     public void startGame(){
+        _toServer.ChangeGameState("DENY");
         //do a countdown here probs
         _picLanes = new PictureLane[_players.size()+1];
         _playerCount = _players.size()+1;
-        for(int i = 0; i<_playerCount; i++){
-            _picLanes[i] = new PictureLane(); 
+        for(int i = 0; i<_playerCount; i++){ 
+            _picLanes[i] = new PictureLane();
         }
         String randomP = _generator.randomizer();
         //0 is the master clients ID, he does the 0 lane
@@ -158,19 +164,52 @@ public class PDLMasterClient{
         //tell server game has started
         _inGame = true;
         //+1 for mastr
-        
-        
-        WaitingRoomGUI.instance.frame.setVisible(false);
-        DrawingPageGUI.instance.frame.setVisible(true);
-        DrawingPageGUI.instance.setPhrase(randomP);       
+
+        ScreenManager.instance.changeScreen(ScreenManager.DRAW);
+        //  WaitingRoomGUI.instance.frame.setVisible(false);
+        //  DrawingPageGUI.instance.frame.setVisible(true);
+        DrawingPageGUI.instance.setPhrase(randomP);
+       
+    }
+    int [] votes = new int[6];
+    int voteCount = 0;
+    public void recieveVote(int id){
+        votes[id]++;
+        voteCount++;
+        //+1 to include the master client
+        if(voteCount == _players.size() + 1){
+            int maxID = 0;
+            for(int i = 0; i<votes.length; i++){
+                if(votes[i] > votes[maxID]){
+                    maxID = i;
+                }
+            }
+            //show winner!
+            showWinner(maxID);
+            //loop over other players telling them the winner
+            for(int i =0; i<_players.size(); i++){
+                _players.get(i).showWinner(maxID);
+            }
+        }
+    }
+    void showWinner(int id){
+        //edit end game gui to just show winning lane i think
+        EndGameGUI.instance.showWinner(id);
     }
     void endGame(){
         //should have complete pic lanes at this point
         System.out.println("game over");
-        EndGameGUI.instance.frame.setVisible(true);
+        //EndGameGUI.instance.frame.setVisible(true);
+        
+        ScreenManager.instance.changeScreen(ScreenManager.END);
         for(int i = 0; i <_picLanes.length; i++){
             EndGameGUI.instance.addLane(_picLanes[i]);
         }
+        //send all players the lanes
+        for(int i = 0; i <_players.size(); i++){
+            _players.get(i).endGame();
+        }
+        
     }
     void countSubmission(){
         _submissions++;
@@ -199,17 +238,19 @@ public class PDLMasterClient{
         //first round is drawRound
         _isDrawRound = !_isDrawRound;
         if(_isDrawRound){
-            DrawingPageGUI.instance.frame.setVisible(true);
+            //DrawingPageGUI.instance.frame.setVisible(true);
             DrawingPageGUI.instance.clearImage();
             DrawingPageGUI.instance.setPhrase(_picLanes[(_playerCount - _curRound + 0)% _playerCount].getLastPhrase());
-            WaitingPage.instance.frame.setVisible(false);
+           // WaitingPage.instance.frame.setVisible(false);
+            ScreenManager.instance.changeScreen(ScreenManager.DRAW);
         }
         else{
-            PhrasePageGUI.instance.frame.setVisible(true);
+         //   PhrasePageGUI.instance.frame.setVisible(true);
             PhrasePageGUI.instance.clearPhrase();
             
             PhrasePageGUI.instance.setImage(_picLanes[(_playerCount - _curRound + 0)% _playerCount].getLastImage());
-            WaitingPage.instance.frame.setVisible(false);
+          //  WaitingPage.instance.frame.setVisible(false);
+            ScreenManager.instance.changeScreen(ScreenManager.PHRASE);
         }
         //tell everyone what to do for next round
         for(int i =0; i <_players.size(); i++){
@@ -258,12 +299,23 @@ public class PDLMasterClient{
                     else if(command.startsWith("PHRASE")){
                         recievePhrase();
                     }
+                    else if(command.startsWith("VOTE")){
+                        countVote();
+                    }
                 } catch (IOException ex) {
                     System.out.println("failed to read from player");
+                    //can probably handle a player quiting here por favor
                 }
             }
         }
-        
+        void countVote(){
+            try {
+                int i = Integer.parseInt(_socketReader.readLine());
+                recieveVote(i);
+            } catch (IOException ex) {
+                System.out.println("Could not read vote");
+            }
+        }
         public void sendNewPlayer(String name, BufferedImage icon){
             
             //tell the player we're sending him a new player
@@ -340,8 +392,7 @@ public class PDLMasterClient{
             
             //set master client in game thread MAYBE
         }
-        public void nextRound(){
-            
+        public void nextRound(){ 
             if(_isDrawRound){
                 _socketWriter.println("DRAW");
                 _socketWriter.flush();
@@ -353,17 +404,49 @@ public class PDLMasterClient{
             
                 //SEND IMAGE HERE
                 sendImage(_picLanes[(_playerCount - _curRound + _id)% _playerCount].getLastImage());
-            }       
-           
+            }            
+        }
+        public void endGame(){
+            _socketWriter.println("END");
+            _socketWriter.flush();
             
+            //send pic lanes here, client will rebuild them
+            for(int i = 0; i <_picLanes.length; i++){
+                ArrayList<String> phrases = _picLanes[i].getPhrases();
+                ArrayList<BufferedImage> images = _picLanes[i].getImages();
+
+                for(int j = 0; j <phrases.size(); j++){
+                    //send the phrase
+                    _socketWriter.println(phrases.get(j));
+                    _socketWriter.flush();
+                   
+                    if(j <= images.size() - 1){
+                        _socketWriter.println("PIC");
+                        _socketWriter.flush();
+                        //send an image
+                        sendImage(images.get(j));    
+                    }
+                }
+                _socketWriter.println("ENDLANE");
+                _socketWriter.flush();
+            }
+            _socketWriter.println("BYE");
+            _socketWriter.flush();
+        }
+        public void showWinner(int id){
+            _socketWriter.println("WINNER");
+            _socketWriter.println(id);
+            _socketWriter.flush();
         }
     }
     public class ServerThread extends Thread{
-        Socket _toServer;
-        BufferedReader _socketReader;
+        private Socket _toServer;
+        private BufferedReader _socketReader;
+        private PrintWriter _socketWriter;
         public ServerThread(Socket s) throws IOException{
             _toServer = s;
             _socketReader = new BufferedReader(new InputStreamReader(_toServer.getInputStream()));
+            _socketWriter = new PrintWriter(s.getOutputStream());
         }
         
         @Override 
@@ -374,6 +457,17 @@ public class PDLMasterClient{
                 } catch (IOException ex) {
                     Logger.getLogger(PDLMasterClient.class.getName()).log(Level.SEVERE, null, ex);
                 }
+            }
+        }
+        /*
+        * Sends our server "Accept" when we can accept more players, and "Deny" when we do not want more players
+        */
+        String curState = "";
+        public void ChangeGameState(String s){
+            if(!curState.equals(s)){
+                curState = s;
+                _socketWriter.println(s);            
+                _socketWriter.flush();
             }
         }
     }

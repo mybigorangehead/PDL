@@ -62,7 +62,8 @@ public class PDLClient {
     public static void main(String[] args) throws IOException, URISyntaxException {
         //instantiate static instance
         PDLClient player = PDLClient.getInstance();
-        
+        ScreenManager s = ScreenManager.getInstance();
+        /*
         //construct gui
         HomeGUI gui = HomeGUI.getInstance();
         SelectRoomGUI sGui = SelectRoomGUI.getInstance();
@@ -70,9 +71,11 @@ public class PDLClient {
         DrawingPageGUI draw = DrawingPageGUI.getInstance();
         WaitingPage waiting = WaitingPage.getInstance();
         PhrasePageGUI phrase = PhrasePageGUI.getInstance();
-        EndGameGUI end = EndGameGUI.getInstance();
+        EndGameGUI end = EndGameGUI.getInstance();*/
     }
-    
+    public void showWinner(int winner){
+        EndGameGUI.instance.showWinner(winner);
+    }
     public void setPlayerName(String name){
         _playerName = name;
     }
@@ -112,7 +115,7 @@ public class PDLClient {
             System.out.println("Couldn't disconnect from server");
         }
     }
-    int M_PORT = 2999;
+    int M_PORT = 50001;
     public void connectToMasterClient(String ipAdd){
         try {        
             Socket m = new Socket(ipAdd, M_PORT);
@@ -130,7 +133,6 @@ public class PDLClient {
         BufferedReader socketReader;
         PrintWriter socketWriter; 
         try {
-
             System.out.println("trying to create room");
             connectToServer();
            // PDLClient.instance.toServer = new Socket("127.0.0.1", 3000);
@@ -142,9 +144,10 @@ public class PDLClient {
             System.out.println("here");
             String myRoomCode = socketReader.readLine();
             System.out.println(myRoomCode);
-            SelectRoomGUI.instance.frame.setVisible(false);
+            ScreenManager.instance.changeScreen(ScreenManager.WAIT);
+            /*SelectRoomGUI.instance.frame.setVisible(false);
 
-            WaitingRoomGUI.instance.frame.setVisible(true);
+            WaitingRoomGUI.instance.frame.setVisible(true);*/
 
             //set room code
             setMaster(myRoomCode); 
@@ -181,9 +184,10 @@ public class PDLClient {
                 socketWriter.close();
 
                 connectToMasterClient(response);
-                SelectRoomGUI.instance.frame.setVisible(false);
+                ScreenManager.instance.changeScreen(ScreenManager.WAIT);
+                //SelectRoomGUI.instance.frame.setVisible(false);
 
-                WaitingRoomGUI.instance.frame.setVisible(true);
+                //WaitingRoomGUI.instance.frame.setVisible(true);
 
 
                 //update my display to have my name and icon
@@ -240,11 +244,25 @@ public class PDLClient {
                     else if(command.equals("PHRASE")){
                         setUpPhrasePage();
                     }
+                    else if(command.equals("END")){
+                        endGame();
+                    }
+                    else if(command.equals("WINNER")){
+                        showWin();
+                    }
                 }                
             } catch (IOException ex) {
                 System.out.println("error");
             }
         
+        }
+        void showWin(){
+            try {
+                int winner = Integer.parseInt(_socketReader.readLine());
+                showWinner(winner);
+            } catch (IOException ex) {
+                System.out.println("could not recieve winner");
+            }
         }
         void setUpLobbyDisplay(){
             try {
@@ -305,13 +323,14 @@ public class PDLClient {
                 String toDraw = _socketReader.readLine();
                 
                 //disable lobby menu
-                WaitingRoomGUI.instance.frame.setVisible(false);
+               // WaitingRoomGUI.instance.frame.setVisible(false);
                 
                 //enable drawing page
-                DrawingPageGUI.instance.frame.setVisible(true);
+                //DrawingPageGUI.instance.frame.setVisible(true);
+                ScreenManager.instance.changeScreen(ScreenManager.DRAW);
                 DrawingPageGUI.instance.clearImage();
                 DrawingPageGUI.instance.setPhrase(toDraw);
-                WaitingPage.instance.frame.setVisible(false);
+               // WaitingPage.instance.frame.setVisible(false);
             } catch (IOException ex) {
                 System.out.println("Couldnt recieve phrase");
             }
@@ -346,8 +365,9 @@ public class PDLClient {
                 
                 BufferedImage playerIcon = ImageIO.read(new ByteArrayInputStream(imgArr));
                 //display proper gui
-                WaitingPage.instance.frame.setVisible(false);
-                PhrasePageGUI.instance.frame.setVisible(true);
+                //WaitingPage.instance.frame.setVisible(false);
+                //PhrasePageGUI.instance.frame.setVisible(true);
+                ScreenManager.instance.changeScreen(ScreenManager.PHRASE);
                 PhrasePageGUI.instance.clearPhrase();
                 PhrasePageGUI.instance.setImage(playerIcon);
                 
@@ -361,6 +381,51 @@ public class PDLClient {
             _socketWriter.flush();
             _socketWriter.println(p);
             _socketWriter.flush();
+        }
+        public void sendVote(int id){
+            _socketWriter.println("VOTE");
+            _socketWriter.println(id);
+            _socketWriter.flush();
+        }
+        public void endGame(){
+            try {
+                String line;
+                while(!((line = _socketReader.readLine()).equals("BYE"))){
+                    //read and add phrase
+                    PictureLane toAdd = new PictureLane();
+                    while(!(line.equals("ENDLANE"))){
+                        //add the phrase
+                        toAdd.addPhrase(line);
+                        line = _socketReader.readLine();
+                        //read image
+                        if(!line.equals("ENDLANE")){
+                            BufferedImage img = recieveImage();
+                            toAdd.addImage(img);
+                            line = _socketReader.readLine();
+                        }
+                    }
+                    EndGameGUI.instance.addLane(toAdd);
+                    ScreenManager.instance.changeScreen(ScreenManager.END);
+                }
+            } catch (IOException ex) {
+                System.out.println("Couldn't recieve picture lane");
+            }
+        }
+        BufferedImage recieveImage(){
+            try {
+                byte[] sizeArr = new byte[4];
+                _toMaster.getInputStream().read(sizeArr);
+                int size = ByteBuffer.wrap(sizeArr).asIntBuffer().get();
+                
+                byte[] imgArr = new byte[size];
+                _toMaster.getInputStream().read(imgArr);
+                
+                return ImageIO.read(new ByteArrayInputStream(imgArr));
+                
+            } catch (IOException ex) {
+                System.out.println("Couldn't revieve image");
+            }
+            return null;
         }
     }
     public boolean isMaster(){
@@ -378,6 +443,9 @@ public class PDLClient {
     }
     public void sendGamePhrase(String p){
         _gameThread.sendGamePhrase(p);
+    }
+    public void sendVote(int id){
+        _gameThread.sendVote(id);
     }
    
 }

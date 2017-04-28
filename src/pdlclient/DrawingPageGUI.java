@@ -27,10 +27,11 @@ public class DrawingPageGUI {
     }*/
     
     public static DrawingPageGUI instance;
-    JFrame frame;
+    //JFrame frame;
     private DrawPanel draw;
     private JTextField phrase;
     private JButton submit;
+    private JPanel panel;
     public static DrawingPageGUI getInstance() throws IOException, URISyntaxException{
         if(instance == null){
             instance = new DrawingPageGUI();
@@ -39,14 +40,14 @@ public class DrawingPageGUI {
     }
     //constructs the home page interface
     private DrawingPageGUI() throws IOException, URISyntaxException{
-        frame = new JFrame("Drawing Page");
+        //frame = new JFrame("Drawing Page");
         Color c  = new Color(99, 194, 255);
-        frame.getContentPane().setBackground(c);
+        /*frame.getContentPane().setBackground(c);
         frame.setSize(1024, 900);
         frame.setLocationRelativeTo(null);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);*/
        
-        JPanel panel = new JPanel(new GridBagLayout());
+        panel = new JPanel(new GridBagLayout());
         GridBagConstraints cons = new GridBagConstraints();        
         
         
@@ -116,9 +117,9 @@ public class DrawingPageGUI {
         cons.ipady = 20;
         panel.add(submit, cons);
         submit.addActionListener(new SubmitButton());
-        frame.add(panel);
+        //frame.add(panel);
 
-        frame.setVisible(false);
+        //frame.setVisible(false);
        // frame.pack();
     }
     public void setPhrase(String p){
@@ -127,19 +128,26 @@ public class DrawingPageGUI {
     public void clearImage(){
         draw.clear();
     }
+    public JPanel getPanel(){
+        return panel;
+    }
     public class SubmitButton implements ActionListener{
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            if(PDLClient.instance.isMaster()){
+            if(PDLClient.instance.isMaster()){ 
+                ScreenManager.instance.changeScreen(ScreenManager.WAITING);
                 PDLClient.instance.getMasterClient().submitGamePic(draw.getImage());
-                frame.setVisible(false);
-                WaitingPage.instance.frame.setVisible(true);
+             //   frame.setVisible(false);
+             //   WaitingPage.instance.frame.setVisible(true);
+               
             }
             else{
+                ScreenManager.instance.changeScreen(ScreenManager.WAITING);
                 PDLClient.instance.sendGameImage(draw.getImage());
-                frame.setVisible(false);
-                WaitingPage.instance.frame.setVisible(true);
+               // frame.setVisible(false);
+               // WaitingPage.instance.frame.setVisible(true);
+               
             }
         }
         
