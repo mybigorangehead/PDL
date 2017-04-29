@@ -5,11 +5,17 @@
  */
 package pdlclient;
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
+import java.awt.image.WritableRaster;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.URISyntaxException;
@@ -120,7 +126,7 @@ public class PDLClient {
     public void connectToMasterClient(String ipAdd){
         try {        
             Socket m = new Socket(ipAdd, M_PORT);
-            System.out.println("here");
+           // System.out.println("here");
             _gameThread = new GameThread(m);
             _gameThread.start();
             System.out.println("connected to master client");
@@ -273,7 +279,8 @@ public class PDLClient {
                 //send my name
                 _socketWriter.println(getPlayerName());
                 _socketWriter.flush();
-                
+                sendImage(getPlayerIcon(), _toMaster);
+                /*
                 //read my icon into byte stream
                 ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
                 ImageIO.write(getPlayerIcon(), "PNG", byteOut);
@@ -282,9 +289,10 @@ public class PDLClient {
                 byte [] imgSize = ByteBuffer.allocate(4).putInt(byteOut.size()).array();
                 _toMaster.getOutputStream().write(imgSize);
                 _toMaster.getOutputStream().write(byteOut.toByteArray());
-                _toMaster.getOutputStream().flush();
+                _toMaster.getOutputStream().flush();*/
                 
                 String name;
+                //read all other players names and images
                 while(!(name = _socketReader.readLine()).equals("BYE")){
                     System.out.println(name);
                     
@@ -297,6 +305,7 @@ public class PDLClient {
 
                     BufferedImage playerIcon = ImageIO.read(new ByteArrayInputStream(imgArr));
                     addPlayer(name, playerIcon);
+                    
                 }
                 WaitingRoomGUI.instance.updateDisplay();
             } catch (IOException ex) {
@@ -451,5 +460,29 @@ public class PDLClient {
     public void sendVote(int id){
         _gameThread.sendVote(id);
     }
-   
+    public void sendImage(BufferedImage img, Socket s) throws IOException{
+        WritableRaster raster = img.getRaster();
+        DataBufferByte data = (DataBufferByte) raster.getDataBuffer();
+        byte [] imgArr = data.getData();
+        sendBytes(imgArr, s);
+    }
+    public void sendBytes(byte[] b, Socket s) throws IOException{
+        System.out.println(b.length);
+        OutputStream out = s.getOutputStream();
+        DataOutputStream dos = new DataOutputStream(out);
+        dos.writeInt(b.length);
+        dos.flush();
+        dos.write(b, 0, b.length);
+        dos.flush();
+    }
+    public BufferedImage recieveImage(Socket s) throws IOException{
+        
+        InputStream in = s.getInputStream();
+        DataInputStream dis = new DataInputStream(in);
+        int length = dis.readInt();
+        byte[] data = new byte[length];
+        dis.readFully(data);
+        ByteArrayInputStream bais = new ByteArrayInputStream(data);
+        return ImageIO.read(bais);
+    }
 }

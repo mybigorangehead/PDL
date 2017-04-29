@@ -7,12 +7,17 @@ package pdlclient;
 
 import java.awt.List;
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
+import java.awt.image.WritableRaster;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -93,6 +98,8 @@ public class PDLMasterClient{
             
             //read player name
             String playerName = socketReader.readLine();
+           // System.out.println(playerName);
+            /*
             //read player image
             byte[] sizeArr = new byte[4];
             s.getInputStream().read(sizeArr);
@@ -100,12 +107,13 @@ public class PDLMasterClient{
             
             byte[] imgArr = new byte[size];
             s.getInputStream().read(imgArr);
-            
             BufferedImage playerIcon = ImageIO.read(new ByteArrayInputStream(imgArr));
+            */
+            BufferedImage playerIcon = recieveImageNew(s);
             //add player to my players
             PDLClient.instance.addPlayer(playerName, playerIcon);
             WaitingRoomGUI.instance.updateDisplay();
-            
+            /*
             //send the new player everyone
             ArrayList<String> names = PDLClient.instance.getPlayerList();
             ArrayList<BufferedImage> icons = PDLClient.instance.getPlayerIcons();
@@ -136,7 +144,9 @@ public class PDLMasterClient{
             //start thread for the new player
             PlayerThread newPlayer = new PlayerThread(s, _players.size()+1);
             _players.add(newPlayer);
-           
+           */
+            socketWriter.println(BYE);
+            socketWriter.flush();
             //if our lobby is full, tell the server to not send us any more players
             if(_players.size() == maxPlayers){
                 _toServer.ChangeGameState("DENY");
@@ -470,5 +480,30 @@ public class PDLMasterClient{
                 _socketWriter.flush();
             }
         }
+    }
+    /*public void sendImage(BufferedImage img, Socket s) throws IOException{
+        WritableRaster raster = img.getRaster();
+        DataBufferByte data = (DataBufferByte) raster.getDataBuffer();
+        byte [] imgArr = data.getData();
+        sendBytes(imgArr, s);
+    }
+    public void sendBytes(byte[] b, Socket s) throws IOException{
+        OutputStream out = s.getOutputStream();
+        DataOutputStream dos = new DataOutputStream(out);
+        dos.writeInt(b.length);
+    
+        dos.write(b, 0, b.length);
+    }*/
+    public BufferedImage recieveImageNew(Socket s) throws IOException{
+        
+        InputStream in = s.getInputStream();
+        DataInputStream dis = new DataInputStream(in);
+        int length = dis.readInt();
+       
+        byte[] data = new byte[length];
+        dis.readFully(data);
+         System.out.println(data.length);
+        ByteArrayInputStream bais = new ByteArrayInputStream(data);
+        return ImageIO.read(bais);
     }
 }
