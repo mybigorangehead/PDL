@@ -19,6 +19,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageInputStream;
+import javax.swing.JOptionPane;
 
 /**
  * Using singleton
@@ -177,7 +178,7 @@ public class PDLClient {
             System.out.println("Joining: " + joinCode);
             String response = socketReader.readLine();
             System.out.println(response);
-            if(!response.equals("FAILED")){                
+            if(!response.equals("FAILURE")){                
                 //can close connection to server here
                 disconnectServer();
                 socketReader.close();
@@ -192,6 +193,9 @@ public class PDLClient {
 
                 //update my display to have my name and icon
                 WaitingRoomGUI.instance.updateDisplay();
+            }else{
+                String errorMessage = socketReader.readLine();
+                JOptionPane.showMessageDialog(null, errorMessage, "InfoBox: FAILURE", JOptionPane.ERROR_MESSAGE);
             }
 
             //do not tell client to close socket to server, since he is master
