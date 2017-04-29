@@ -27,10 +27,11 @@ public class PhrasePageGUI {
     }*/
     
     public static PhrasePageGUI instance;
-    JFrame frame;
+    //JFrame frame;
     private JLabel img;
     private JTextField phrase;
     private JButton submit;
+    private JPanel panel;
     public static PhrasePageGUI getInstance() throws IOException, URISyntaxException{
         if(instance == null){
             instance = new PhrasePageGUI();
@@ -39,14 +40,14 @@ public class PhrasePageGUI {
     }
     //constructs the home page interface
     private PhrasePageGUI() throws IOException, URISyntaxException{
-        frame = new JFrame("Phrase Page");
+        //frame = new JFrame("Phrase Page");
         Color c  = new Color(99, 194, 255);
-        frame.getContentPane().setBackground(c);
+        /*frame.getContentPane().setBackground(c);
         frame.setSize(1024, 900);
         frame.setLocationRelativeTo(null);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);*/
        
-        JPanel panel = new JPanel(new GridBagLayout());
+        panel = new JPanel(new GridBagLayout());
         GridBagConstraints cons = new GridBagConstraints();        
         
         
@@ -108,9 +109,9 @@ public class PhrasePageGUI {
         cons.ipady = 20;
         panel.add(submit, cons);
         submit.addActionListener(new SubmitButton());
-        frame.add(panel);
+        //frame.add(panel);
 
-        frame.setVisible(false);
+        //frame.setVisible(false);
        // frame.pack();
     }
     public void setImage(BufferedImage i){
@@ -119,21 +120,25 @@ public class PhrasePageGUI {
     public void clearPhrase(){
         phrase.setText("");
     }
-
+    public JPanel getPanel(){
+        return panel;
+    }
     public class SubmitButton implements ActionListener{
 
         @Override
         public void actionPerformed(ActionEvent e) {
             if(PDLClient.instance.isMaster()){
                 
-                frame.setVisible(false);
-                WaitingPage.instance.frame.setVisible(true);
+               // frame.setVisible(false);
+               // WaitingPage.instance.frame.setVisible(true);
+                ScreenManager.instance.changeScreen(ScreenManager.WAITING);
                 PDLClient.instance.getMasterClient().submitGamePhrase(phrase.getText());
             }
             else{
                 
-                frame.setVisible(false);
-                WaitingPage.instance.frame.setVisible(true);
+               // frame.setVisible(false);
+               // WaitingPage.instance.frame.setVisible(true);
+                ScreenManager.instance.changeScreen(ScreenManager.WAITING);
                 PDLClient.instance.sendGamePhrase(phrase.getText());
             }
         }

@@ -20,12 +20,13 @@ import java.net.URISyntaxException;
  * @author Josh
  */
 public class HomeGUI {
-    public static HomeGUI instance;
-    JFrame frame;
-    DrawPanel draw;
-    JTextField name;
-    JButton quickPlay;
-    JButton customPlay;
+    static HomeGUI instance;
+    //JFrame frame;
+    private DrawPanel draw;
+    private JTextField name;
+    private JButton quickPlay;
+    private JButton customPlay;
+    private JPanel myPanel;
     public static HomeGUI getInstance() throws IOException, URISyntaxException{
         if(instance == null){
             instance = new HomeGUI();
@@ -35,14 +36,14 @@ public class HomeGUI {
     //constructs the home page interface
     private HomeGUI() throws IOException, URISyntaxException{
         
-        frame = new JFrame("Picture Down The Lane");
+        /*frame = new JFrame("Picture Down The Lane");
         Color c  = new Color(99, 194, 255);
         frame.getContentPane().setBackground(c);
         frame.setSize(1024, 900);
         frame.setLocationRelativeTo(null);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);*/
        
-        JPanel panel = new JPanel(new GridBagLayout());
+        myPanel = new JPanel(new GridBagLayout());
         GridBagConstraints cons = new GridBagConstraints();
         
         
@@ -57,8 +58,9 @@ public class HomeGUI {
         cons.gridy =0;
         cons.weightx = 1;
         cons.ipady = 20;
-        panel.setBackground(c);
-        panel.add(titleLable, cons);
+        Color c  = new Color(99, 194, 255);
+        myPanel.setBackground(c);
+        myPanel.add(titleLable, cons);
         
         //the drawing box
         int size = 128;
@@ -69,7 +71,7 @@ public class HomeGUI {
         cons.gridx = 0;
         cons.gridy = 1;      
        // cons.weightx = 5;
-        panel.add(draw, cons);
+        myPanel.add(draw, cons);
         //add color picker
         JPanel colors = draw.getColorPanel(16);
         cons.fill = GridBagConstraints.NONE;
@@ -77,7 +79,7 @@ public class HomeGUI {
         cons.ipady = 0;
         cons.gridx = 0;
         cons.gridy = 2;
-        panel.add(colors, cons);
+        myPanel.add(colors, cons);
         //create a font
         Font font1 = new Font("Comic Sans MS", Font.BOLD, 16);
         
@@ -90,7 +92,7 @@ public class HomeGUI {
         cons.gridx = 0;
         cons.ipady = 0;
         cons.ipadx = 0;
-        panel.add(name, cons);
+        myPanel.add(name, cons);
         
         //NICKNAME BACKGROUND
         URI nURL = getClass().getResource("/images/nnbg.png").toURI();
@@ -100,7 +102,7 @@ public class HomeGUI {
         cons.fill = GridBagConstraints.NONE;
         cons.gridy =3;
         cons.gridx = 0;        
-        panel.add(nnbg, cons);
+        myPanel.add(nnbg, cons);
         
         //QUICK PLAY BUTTON
         URI qpURL = getClass().getResource("/images/quickplay.png").toURI();
@@ -114,7 +116,7 @@ public class HomeGUI {
         cons.gridy = 4;
         cons.gridx = 0;
         cons.ipady = 20;
-        panel.add(play, cons);
+        myPanel.add(play, cons);
         
         //CUSTOM PLAY BUTTON
         URI cpURL = getClass().getResource("/images/customplay.png").toURI();
@@ -130,10 +132,10 @@ public class HomeGUI {
         cons.gridy = 5;
         cons.gridx = 0;
         cons.ipady = 20;
-        panel.add(customPlay, cons);
-        frame.add(panel);
+        myPanel.add(customPlay, cons);
+        //frame.add(panel);
 
-        frame.setVisible(true);
+        //frame.setVisible(true);
        // frame.pack();
     }
     
@@ -144,14 +146,16 @@ public class HomeGUI {
     }
     //Fill in
     public void QuickPlay(){
-        
+        SetClientInfo();
+        //send server quickplay message
     }
     
     //Fill in
     public void CustomPlay(){
         SetClientInfo();
-        frame.setVisible(false);
-        SelectRoomGUI.instance.frame.setVisible(true);
+        //frame.setVisible(false);
+        //SelectRoomGUI.instance.frame.setVisible(true);
+        ScreenManager.instance.changeScreen(ScreenManager.SELECT);
         
     }
     public class MenuButtons implements ActionListener{
@@ -166,5 +170,8 @@ public class HomeGUI {
             }
         }
         
+    }
+    public JPanel getPanel(){
+        return myPanel;
     }
 }

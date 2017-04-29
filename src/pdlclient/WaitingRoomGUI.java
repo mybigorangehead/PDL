@@ -32,14 +32,14 @@ import javax.swing.JTextField;
  * @author Josh
  */
 public class WaitingRoomGUI {
-    public static WaitingRoomGUI instance;
-    public JFrame frame;
+    static WaitingRoomGUI instance;
+   // public JFrame frame;
     private JTextField roomCode;
     private int maxPlayers = 6;
     private JTextField [] players = new JTextField[maxPlayers];
     private JLabel [] playerIcons = new JLabel[maxPlayers];
     private JButton start;
-    
+    private JPanel panel;
     public static WaitingRoomGUI getInstance() throws IOException, URISyntaxException{
         if(instance == null){
             instance = new WaitingRoomGUI();
@@ -47,14 +47,14 @@ public class WaitingRoomGUI {
         return instance;
     }
     private WaitingRoomGUI() throws URISyntaxException, IOException{
-        frame = new JFrame("Waiting Room");
+        /*frame = new JFrame("Waiting Room");
         Color c  = new Color(99, 194, 255);
         frame.getContentPane().setBackground(c);
         frame.setSize(1024, 900);
         frame.setLocationRelativeTo(null);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-       
-        JPanel panel = new JPanel(new GridBagLayout());
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);*/
+        Color c  = new Color(99, 194, 255);
+        panel = new JPanel(new GridBagLayout());
         GridBagConstraints cons = new GridBagConstraints();
         panel.setBackground(c);
         
@@ -143,8 +143,11 @@ public class WaitingRoomGUI {
         start.setVisible(false);
         start.setEnabled(false);
         
-        frame.add(panel);
-        frame.setVisible(false);
+       /* frame.add(panel);
+        frame.setVisible(false);*/
+    }
+    public JPanel getPanel(){
+        return panel;
     }
     public void updateDisplay(){
         roomCode.setText(PDLClient.instance.getCurrentRoom());
