@@ -14,6 +14,8 @@ import javax.imageio.ImageIO;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -129,10 +131,14 @@ public class PhrasePageGUI {
         public void actionPerformed(ActionEvent e) {
             if(PDLClient.instance.isMaster()){
                 
-               // frame.setVisible(false);
-               // WaitingPage.instance.frame.setVisible(true);
-                ScreenManager.instance.changeScreen(ScreenManager.WAITING);
-                PDLClient.instance.getMasterClient().submitGamePhrase(phrase.getText());
+                try {
+                    // frame.setVisible(false);
+                    // WaitingPage.instance.frame.setVisible(true);
+                    ScreenManager.instance.changeScreen(ScreenManager.WAITING);
+                    PDLClient.instance.getMasterClient().submitGamePhrase(phrase.getText());
+                } catch (IOException ex) {
+                    Logger.getLogger(PhrasePageGUI.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
             else{
                 

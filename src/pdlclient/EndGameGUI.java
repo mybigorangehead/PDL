@@ -115,11 +115,13 @@ public class EndGameGUI {
         ArrayList<String> phrases = p.getPhrases();
         ArrayList<BufferedImage> images = p.getImages();
         cons.gridx = curX;
+        
         cons.fill = GridBagConstraints.NONE;
         int curY = 0;
+        cons.gridy = curY;
         Color c  = new Color(99, 194, 255);
         Font font1 = new Font("Comic Sans MS", Font.BOLD, 20);
-        JTextField title = new JTextField("Join Code");
+        JTextField title = new JTextField("Winner!");
         title.setFont(font1);
         title.setEditable(false);
         title.setBackground(c);

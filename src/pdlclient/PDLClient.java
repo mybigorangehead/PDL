@@ -135,7 +135,7 @@ public class PDLClient {
             System.out.println("couldn't connect to master client");
         }
     }
-    String CREATE_CODE = "210";
+    String CREATE_CODE = "CREATE";
     public void createRoom(){
         BufferedReader socketReader;
         PrintWriter socketWriter; 
@@ -146,9 +146,9 @@ public class PDLClient {
             socketReader = new BufferedReader(new InputStreamReader(getServerSocket().getInputStream()));
             socketWriter = new PrintWriter(getServerSocket().getOutputStream());
             //send code for creating room
-            socketWriter.println(CREATE_CODE);
+            socketWriter.println(CREATE_CODE + " 0");
             socketWriter.flush();
-            System.out.println("here");
+           
             String myRoomCode = socketReader.readLine();
             System.out.println(myRoomCode);
             ScreenManager.instance.changeScreen(ScreenManager.WAIT);
@@ -167,7 +167,7 @@ public class PDLClient {
             System.out.println("Couldn't create room");
         }
     }
-    String JOIN_CODE = "240";
+    String JOIN_CODE = "JOIN";
     public void joinRoom(String joinCode){
         BufferedReader socketReader;
         PrintWriter socketWriter; 
@@ -189,14 +189,8 @@ public class PDLClient {
                 disconnectServer();
                 socketReader.close();
                 socketWriter.close();
-
                 connectToMasterClient(response);
                 ScreenManager.instance.changeScreen(ScreenManager.WAIT);
-                //SelectRoomGUI.instance.frame.setVisible(false);
-
-                //WaitingRoomGUI.instance.frame.setVisible(true);
-
-
                 //update my display to have my name and icon
                 WaitingRoomGUI.instance.updateDisplay();
             }else{
@@ -205,6 +199,44 @@ public class PDLClient {
             }
 
             //do not tell client to close socket to server, since he is master
+        } catch (IOException ex) {
+            System.out.println("Couldn't create room");
+        }
+    }
+    String QUICK = "QUICK";
+    public void joinQuick(){
+        BufferedReader socketReader;
+        PrintWriter socketWriter; 
+        try {
+
+            System.out.println("trying to join room");
+            connectToServer();
+           // PDLClient.instance.toServer = new Socket("127.0.0.1", 3000);
+            socketReader = new BufferedReader(new InputStreamReader(_toServer.getInputStream()));
+            socketWriter = new PrintWriter(_toServer.getOutputStream());
+           
+            socketWriter.println(QUICK);
+            socketWriter.flush();
+           
+
+            String response = socketReader.readLine();
+            if(response.equals("NEW")){
+                String myRoomCode = socketReader.readLine();
+                System.out.println(myRoomCode);
+                ScreenManager.instance.changeScreen(ScreenManager.WAIT);
+                //set room code
+                setMaster(myRoomCode); 
+                //update my display to have my name and icon
+                WaitingRoomGUI.instance.updateDisplay();
+            }
+            else {
+                //String info = socketReader.readLine();
+                disconnectServer();
+                socketReader.close();
+                socketWriter.close();
+                connectToMasterClient(response);
+                ScreenManager.instance.changeScreen(ScreenManager.WAIT);
+            }
         } catch (IOException ex) {
             System.out.println("Couldn't create room");
         }
@@ -280,30 +312,13 @@ public class PDLClient {
                 _socketWriter.println(getPlayerName());
                 _socketWriter.flush();
                 sendImage(getPlayerIcon(), _toMaster);
-                /*
-                //read my icon into byte stream
-                ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
-                ImageIO.write(getPlayerIcon(), "PNG", byteOut);
-                
-                //get image size, write both size and image to master client
-                byte [] imgSize = ByteBuffer.allocate(4).putInt(byteOut.size()).array();
-                _toMaster.getOutputStream().write(imgSize);
-                _toMaster.getOutputStream().write(byteOut.toByteArray());
-                _toMaster.getOutputStream().flush();*/
                 
                 String name;
                 //read all other players names and images
                 while(!(name = _socketReader.readLine()).equals("BYE")){
-                    System.out.println(name);
-                    
-                    byte[] sizeArr = new byte[4];
-                    _toMaster.getInputStream().read(sizeArr);
-                    int size = ByteBuffer.wrap(sizeArr).asIntBuffer().get();
+                    System.out.println(name);           
 
-                    byte[] imgArr = new byte[size];
-                    _toMaster.getInputStream().read(imgArr);
-
-                    BufferedImage playerIcon = ImageIO.read(new ByteArrayInputStream(imgArr));
+                    BufferedImage playerIcon = recieveImage(_toMaster);
                     addPlayer(name, playerIcon);
                     
                 }
@@ -315,14 +330,9 @@ public class PDLClient {
         public void recieveNewPlayer(){
             try {
                 String name = _socketReader.readLine();
-                byte[] sizeArr = new byte[4];
-                _toMaster.getInputStream().read(sizeArr);
-                int size = ByteBuffer.wrap(sizeArr).asIntBuffer().get();
+                
 
-                byte[] imgArr = new byte[size];
-                _toMaster.getInputStream().read(imgArr);
-
-                BufferedImage playerIcon = ImageIO.read(new ByteArrayInputStream(imgArr));
+                BufferedImage playerIcon = recieveImage(_toMaster);
                 addPlayer(name, playerIcon);
                 WaitingRoomGUI.instance.updateDisplay();
                 
@@ -348,35 +358,12 @@ public class PDLClient {
                 System.out.println("Couldnt recieve phrase");
             }
         }
-        public void sendGameImage(BufferedImage img){
-            try {
-                System.out.println("sending picture");
-                _socketWriter.println("PICTURE");
-                _socketWriter.flush();
-                //read my icon into byte stream
-                ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
-                ImageIO.write(img, "PNG", byteOut);
-                
-                //get image size, write both size and image to master client
-                byte [] imgSize = ByteBuffer.allocate(4).putInt(byteOut.size()).array();
-                _toMaster.getOutputStream().write(imgSize);
-                _toMaster.getOutputStream().write(byteOut.toByteArray());
-                _toMaster.getOutputStream().flush();
-            } catch (IOException ex) {
-                System.out.println("Could not send image.");
-            }
-        }
+        
         public void setUpPhrasePage(){
             try {
-                //read image
-                byte[] sizeArr = new byte[4];
-                _toMaster.getInputStream().read(sizeArr);
-                int size = ByteBuffer.wrap(sizeArr).asIntBuffer().get();
+               
                 
-                byte[] imgArr = new byte[size];
-                _toMaster.getInputStream().read(imgArr);
-                
-                BufferedImage playerIcon = ImageIO.read(new ByteArrayInputStream(imgArr));
+                BufferedImage playerIcon = recieveImage(_toMaster);
                 //display proper gui
                 //WaitingPage.instance.frame.setVisible(false);
                 //PhrasePageGUI.instance.frame.setVisible(true);
@@ -400,6 +387,11 @@ public class PDLClient {
             _socketWriter.println(id);
             _socketWriter.flush();
         }
+        public void sendGameImage(BufferedImage img) throws IOException{
+            _socketWriter.println("PICTURE");
+            _socketWriter.flush();
+            sendImage(img, _toMaster);
+        }
         public void endGame(){
             try {
                 String line;
@@ -412,7 +404,7 @@ public class PDLClient {
                         line = _socketReader.readLine();
                         //read image
                         if(!line.equals("ENDLANE")){
-                            BufferedImage img = recieveImage();
+                            BufferedImage img = recieveImage(_toMaster);
                             toAdd.addImage(img);
                             line = _socketReader.readLine();
                         }
@@ -423,22 +415,6 @@ public class PDLClient {
             } catch (IOException ex) {
                 System.out.println("Couldn't recieve picture lane");
             }
-        }
-        BufferedImage recieveImage(){
-            try {
-                byte[] sizeArr = new byte[4];
-                _toMaster.getInputStream().read(sizeArr);
-                int size = ByteBuffer.wrap(sizeArr).asIntBuffer().get();
-                
-                byte[] imgArr = new byte[size];
-                _toMaster.getInputStream().read(imgArr);
-                
-                return ImageIO.read(new ByteArrayInputStream(imgArr));
-                
-            } catch (IOException ex) {
-                System.out.println("Couldn't revieve image");
-            }
-            return null;
         }
     }
     public boolean isMaster(){
@@ -451,7 +427,7 @@ public class PDLClient {
     public PDLMasterClient getMasterClient(){
         return _master;
     }
-    public void sendGameImage(BufferedImage img){
+    public void sendGameImage(BufferedImage img) throws IOException{
         _gameThread.sendGameImage(img);
     }
     public void sendGamePhrase(String p){
@@ -461,13 +437,13 @@ public class PDLClient {
         _gameThread.sendVote(id);
     }
     public void sendImage(BufferedImage img, Socket s) throws IOException{
-        WritableRaster raster = img.getRaster();
-        DataBufferByte data = (DataBufferByte) raster.getDataBuffer();
-        byte [] imgArr = data.getData();
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ImageIO.write(img, "PNG", baos);
+        byte [] imgArr = baos.toByteArray();
         sendBytes(imgArr, s);
     }
     public void sendBytes(byte[] b, Socket s) throws IOException{
-        System.out.println(b.length);
+        System.out.println("sending: " + b.length);
         OutputStream out = s.getOutputStream();
         DataOutputStream dos = new DataOutputStream(out);
         dos.writeInt(b.length);
@@ -481,6 +457,7 @@ public class PDLClient {
         DataInputStream dis = new DataInputStream(in);
         int length = dis.readInt();
         byte[] data = new byte[length];
+        System.out.println("recievving" + length);
         dis.readFully(data);
         ByteArrayInputStream bais = new ByteArrayInputStream(data);
         return ImageIO.read(bais);

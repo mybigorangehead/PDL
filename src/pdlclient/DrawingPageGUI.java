@@ -14,6 +14,8 @@ import javax.imageio.ImageIO;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -136,17 +138,25 @@ public class DrawingPageGUI {
         @Override
         public void actionPerformed(ActionEvent e) {
             if(PDLClient.instance.isMaster()){ 
-                ScreenManager.instance.changeScreen(ScreenManager.WAITING);
-                PDLClient.instance.getMasterClient().submitGamePic(draw.getImage());
-             //   frame.setVisible(false);
-             //   WaitingPage.instance.frame.setVisible(true);
+                try {
+                    ScreenManager.instance.changeScreen(ScreenManager.WAITING);
+                    PDLClient.instance.getMasterClient().submitGamePic(draw.getImage());
+                    //   frame.setVisible(false);
+                    //   WaitingPage.instance.frame.setVisible(true);
+                } catch (IOException ex) {
+                    Logger.getLogger(DrawingPageGUI.class.getName()).log(Level.SEVERE, null, ex);
+                }
                
             }
             else{
-                ScreenManager.instance.changeScreen(ScreenManager.WAITING);
-                PDLClient.instance.sendGameImage(draw.getImage());
-               // frame.setVisible(false);
-               // WaitingPage.instance.frame.setVisible(true);
+                try {
+                    ScreenManager.instance.changeScreen(ScreenManager.WAITING);
+                    PDLClient.instance.sendGameImage(draw.getImage());
+                    // frame.setVisible(false);
+                    // WaitingPage.instance.frame.setVisible(true);
+                } catch (IOException ex) {
+                    Logger.getLogger(DrawingPageGUI.class.getName()).log(Level.SEVERE, null, ex);
+                }
                
             }
         }

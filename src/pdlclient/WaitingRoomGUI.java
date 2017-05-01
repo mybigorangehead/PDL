@@ -69,8 +69,9 @@ public class WaitingRoomGUI {
         title.setForeground(textColor);
         title.setBorder(BorderFactory.createEmptyBorder());
         cons.fill = GridBagConstraints.NONE;
+        //cons.anchor = GridBagConstraints.WEST;
         cons.gridy = 0;
-        cons.gridx = 0;
+        cons.gridx = 1;
         panel.add(title, cons);
         
         //create placeholder text field for the join code
@@ -82,7 +83,7 @@ public class WaitingRoomGUI {
         roomCode.setBorder(BorderFactory.createEmptyBorder());
         cons.fill = GridBagConstraints.NONE;
         cons.gridy = 1;
-        cons.gridx = 0;
+        cons.gridx = 1;
         panel.add(roomCode, cons);        
         
         
@@ -117,7 +118,7 @@ public class WaitingRoomGUI {
                 startY+=2;
             }
             else{
-                startX = (startX == 0)? 1:0;
+                startX = (startX == 0)? 2:0;
             }
             
         }
@@ -134,7 +135,7 @@ public class WaitingRoomGUI {
         //start.addActionListener(actionL);
         cons.fill = GridBagConstraints.NONE;
         cons.gridy = startY + 2;
-        cons.gridx = 0;
+        cons.gridx = 1;
         cons.ipady = 0;
         
         //cons.weight = 1;
@@ -168,7 +169,9 @@ public class WaitingRoomGUI {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            PDLClient.instance.getMasterClient().startGame();
+            if(PDLClient.instance.getPlayerList().size() >=2){
+                PDLClient.instance.getMasterClient().startGame();
+            }
         }
     }     
 }

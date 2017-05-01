@@ -104,19 +104,23 @@ public class HomeGUI {
         cons.gridx = 0;        
         myPanel.add(nnbg, cons);
         
+        
+        
+         ActionListener cAl = new MenuButtons();
         //QUICK PLAY BUTTON
         URI qpURL = getClass().getResource("/images/quickplay.png").toURI();
         File qpPic = new File(qpURL);
         BufferedImage qp = ImageIO.read(qpPic);
-        JButton play = new JButton(new ImageIcon(qp));
+        quickPlay = new JButton(new ImageIcon(qp));
         //remove borer
-        play.setBorder(BorderFactory.createEmptyBorder());
-        play.setContentAreaFilled(false);
+        quickPlay.setBorder(BorderFactory.createEmptyBorder());
+        quickPlay.setContentAreaFilled(false);
+        quickPlay.addActionListener(cAl);
         cons.fill = GridBagConstraints.NONE;
         cons.gridy = 4;
         cons.gridx = 0;
         cons.ipady = 20;
-        myPanel.add(play, cons);
+        myPanel.add(quickPlay, cons);
         
         //CUSTOM PLAY BUTTON
         URI cpURL = getClass().getResource("/images/customplay.png").toURI();
@@ -126,7 +130,7 @@ public class HomeGUI {
          //remove borer
         customPlay.setBorder(BorderFactory.createEmptyBorder());
         customPlay.setContentAreaFilled(false);
-        ActionListener cAl = new MenuButtons();
+       
         customPlay.addActionListener(cAl);
         //cons.fill = GridBagConstraints.HORIZONTAL;
         cons.gridy = 5;
@@ -147,6 +151,8 @@ public class HomeGUI {
     //Fill in
     public void QuickPlay(){
         SetClientInfo();
+        ScreenManager.instance.changeScreen(ScreenManager.SELECT);
+        PDLClient.instance.joinQuick();
         //send server quickplay message
     }
     
