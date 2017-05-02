@@ -107,7 +107,7 @@ public class PDLClient {
     }
     public void connectToServer(){
         try {
-            _toServer = new Socket("127.0.0.1", 3000);
+            _toServer = new Socket("172.25.43.145", 3000);
         } catch (IOException ex) {
             System.out.println("Couldn't connect to server");
         }
@@ -450,6 +450,8 @@ public class PDLClient {
         dos.flush();
         dos.write(b, 0, b.length);
         dos.flush();
+        dos.close();
+        out.close();
     }
     public BufferedImage recieveImage(Socket s) throws IOException{
         
