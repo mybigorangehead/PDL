@@ -99,7 +99,7 @@ public class PDLClient {
     }
     public void connectToServer(){
         try {
-            _toServer = new Socket("172.25.43.145", 3000);
+            _toServer = new Socket("127.0.0.1", 3000);
         } catch (IOException ex) {
             System.out.println("Couldn't connect to server");
         }
@@ -118,7 +118,7 @@ public class PDLClient {
     public void connectToMasterClient(String ipAdd){
         try {        
             Socket m = new Socket(ipAdd, M_PORT);
-           // System.out.println("here");
+            System.out.println(ipAdd);
             _gameThread = new GameThread(m);
             _gameThread.start();
             System.out.println("connected to master client");
@@ -245,13 +245,13 @@ public class PDLClient {
     */
     public class GameThread extends Thread{
         private Socket _toMaster;
-        private BufferedReader _socketReader;
-        private PrintWriter _socketWriter;
+        private DataInputStream _socketReader;
+        private DataOutputStream _socketWriter;
         public  GameThread(Socket s){
             try {
                 _toMaster = s;
-                _socketReader = new BufferedReader(new InputStreamReader(s.getInputStream()));
-                _socketWriter = new PrintWriter(s.getOutputStream());
+                _socketReader = new DataInputStream(s.getInputStream());
+                _socketWriter = new DataOutputStream(s.getOutputStream());
             } catch (IOException ex) {
                 System.out.println("error");
             }
@@ -261,7 +261,7 @@ public class PDLClient {
         public void run(){
             try {
                 while(true){
-                    String command = _socketReader.readLine();
+                    String command = _socketReader.readUTF();
                     //master client wants me to officially join, ie send my name and icon, and send me all the names and icons
                     if(command.equals("JOIN")){
                         setUpLobbyDisplay();                        
@@ -292,7 +292,7 @@ public class PDLClient {
         }
         void showWin(){
             try {
-                int winner = Integer.parseInt(_socketReader.readLine());
+                int winner = _socketReader.readInt();
                 showWinner(winner);
             } catch (IOException ex) {
                 System.out.println("could not recieve winner");
@@ -301,22 +301,18 @@ public class PDLClient {
         void setUpLobbyDisplay(){
             try {
                 //send my name
-                _socketWriter.println(getPlayerName());
+                _socketWriter.writeUTF(getPlayerName());
                 _socketWriter.flush();
-                sendImage(getPlayerIcon(), _toMaster);
+                sendImage(getPlayerIcon());
                 
                 String name;
                 //read all other players names and images
-                while(!(name = _socketReader.readLine()).equals("BYE")){
+                while(!(name = _socketReader.readUTF()).equals("BYE")){
                     
-                    System.out.println(name);           
-
-                    BufferedImage playerIcon = recieveImage(_toMaster);
+                    System.out.println(name);          
+                    BufferedImage playerIcon = recieveImage();
                     addPlayer(name, playerIcon);
-                    _socketWriter.println("GOTIT");
-                    _socketWriter.println("GOTIT");
-                    _socketWriter.flush();
-                    
+                                        
                 }
                 System.out.println("updating display");
                 WaitingRoomGUI.instance.updateDisplay();
@@ -326,15 +322,10 @@ public class PDLClient {
         }
         public void recieveNewPlayer(){
             try {
-                String name = _socketReader.readLine();
-                
-
-                BufferedImage playerIcon = recieveImage(_toMaster);
+                String name = _socketReader.readUTF();
+                BufferedImage playerIcon = recieveImage();
                 addPlayer(name, playerIcon);
-                _socketWriter.println("GOTIT");
-                _socketWriter.flush();
-                WaitingRoomGUI.instance.updateDisplay();
-                
+                WaitingRoomGUI.instance.updateDisplay();                
             } catch (IOException ex) {
                 System.out.println("Couldn't recieve new player");
             }
@@ -342,7 +333,7 @@ public class PDLClient {
         void setUpDrawPage(){
         
             try {
-                String toDraw = _socketReader.readLine();
+                String toDraw = _socketReader.readUTF();
                 
              
                 ScreenManager.instance.changeScreen(ScreenManager.DRAW);
@@ -358,7 +349,7 @@ public class PDLClient {
             try {
                
                 
-                BufferedImage playerIcon = recieveImage(_toMaster);
+                BufferedImage playerIcon = recieveImage();
                 //display proper gui
                 //WaitingPage.instance.frame.setVisible(false);
                 //PhrasePageGUI.instance.frame.setVisible(true);
@@ -371,39 +362,37 @@ public class PDLClient {
                 System.out.println("Couldn't recieve image.");
             }
         }
-        public void sendGamePhrase(String p){
-            _socketWriter.println("PHRASE");
+        public void sendGamePhrase(String p) throws IOException{
+            _socketWriter.writeUTF("PHRASE");
             _socketWriter.flush();
-            _socketWriter.println(p);
+            _socketWriter.writeUTF(p);
             _socketWriter.flush();
         }
-        public void sendVote(int id){
-            _socketWriter.println("VOTE");
-            _socketWriter.println(id);
+        public void sendVote(int id) throws IOException{
+            _socketWriter.writeUTF("VOTE");
+            _socketWriter.writeInt(id);
             _socketWriter.flush();
         }
         public void sendGameImage(BufferedImage img) throws IOException{
-            _socketWriter.println("PICTURE");
+            _socketWriter.writeUTF("PICTURE");
             _socketWriter.flush();
-            sendImage(img, _toMaster);
+            sendImage(img);
         }
         public void endGame(){
             try {
                 String line;
-                while(!((line = _socketReader.readLine()).equals("BYE"))){
+                while(!((line = _socketReader.readUTF()).equals("BYE"))){
                     //read and add phrase
                     PictureLane toAdd = new PictureLane();
                     while(!(line.equals("ENDLANE"))){
                         //add the phrase
                         toAdd.addPhrase(line);
-                        line = _socketReader.readLine();
+                        line = _socketReader.readUTF();
                         //read image
                         if(!line.equals("ENDLANE")){
-                            BufferedImage img = recieveImage(_toMaster);
+                            BufferedImage img = recieveImage();
                             toAdd.addImage(img);
-                            _socketWriter.println("GOTIT");
-                            _socketWriter.flush();
-                            line = _socketReader.readLine();
+                            line = _socketReader.readUTF();
                             
                         }
                     }
@@ -413,6 +402,30 @@ public class PDLClient {
             } catch (IOException ex) {
                 System.out.println("Couldn't recieve picture lane");
             }
+        }
+        public void sendImage(BufferedImage img) throws IOException{
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            ImageIO.write(img, "PNG", baos);
+            byte [] imgArr = baos.toByteArray();
+            sendBytes(imgArr);
+        }
+        public void sendBytes(byte[] b) throws IOException{
+            System.out.println("sending: " + b.length);
+            _socketWriter.writeInt(b.length);
+            _socketWriter.flush();
+            _socketWriter.write(b, 0, b.length);
+            _socketWriter.flush();
+
+            //dos.close();
+            //out.close();
+        }
+        public BufferedImage recieveImage() throws IOException{
+            int length = _socketReader.readInt();
+            byte[] data = new byte[length];
+            System.out.println("recievving" + length);
+            _socketReader.readFully(data);
+            ByteArrayInputStream bais = new ByteArrayInputStream(data);
+            return ImageIO.read(bais);
         }
     }
     public boolean isMaster(){
@@ -428,41 +441,11 @@ public class PDLClient {
     public void sendGameImage(BufferedImage img) throws IOException{
         _gameThread.sendGameImage(img);
     }
-    public void sendGamePhrase(String p){
+    public void sendGamePhrase(String p) throws IOException{
         _gameThread.sendGamePhrase(p);
     }
-    public void sendVote(int id){
+    public void sendVote(int id) throws IOException{
         _gameThread.sendVote(id);
     }
-    public void sendImage(BufferedImage img, Socket s) throws IOException{
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ImageIO.write(img, "PNG", baos);
-        byte [] imgArr = baos.toByteArray();
-        sendBytes(imgArr, s);
-    }
-    public void sendBytes(byte[] b, Socket s) throws IOException{
-        System.out.println("sending: " + b.length);
-        OutputStream out = s.getOutputStream();
-        DataOutputStream dos = new DataOutputStream(out);
-        dos.writeInt(b.length);
-        dos.flush();
-        dos.write(b, 0, b.length);
-        dos.flush();
-        
-        //dos.close();
-        //out.close();
-    }
-    public BufferedImage recieveImage(Socket s) throws IOException{
-        
-        InputStream in = s.getInputStream();
-        DataInputStream dis = new DataInputStream(in);
-        int length = dis.readInt();
-        byte[] data = new byte[length];
-        System.out.println("recievving" + length);
-        dis.readFully(data);
-        
-        //dis.reset();
-        ByteArrayInputStream bais = new ByteArrayInputStream(data);
-        return ImageIO.read(bais);
-    }
+    
 }
