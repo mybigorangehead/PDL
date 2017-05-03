@@ -444,7 +444,6 @@ public class PDLClient {
         System.out.println("sending: " + b.length);
         OutputStream out = s.getOutputStream();
         DataOutputStream dos = new DataOutputStream(out);
-        dos.flush();
         dos.writeInt(b.length);
         dos.flush();
         dos.write(b, 0, b.length);

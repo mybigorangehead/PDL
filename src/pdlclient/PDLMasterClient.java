@@ -114,8 +114,6 @@ public class PDLMasterClient{
                 socketWriter.println(names.get(i));
                 socketWriter.flush();
                 PDLClient.instance.sendImage(icons.get(i), s);
-                String bs = socketReader.readLine();
-                System.out.println(bs);
             
             }
             
@@ -188,7 +186,7 @@ public class PDLMasterClient{
         //edit end game gui to just show winning lane i think
         EndGameGUI.instance.showWinner(id);
     }
-    void endGame() throws IOException, InterruptedException{
+    void endGame() throws IOException{
         //should have complete pic lanes at this point
         System.out.println("game over");
         //EndGameGUI.instance.frame.setVisible(true);
@@ -203,7 +201,7 @@ public class PDLMasterClient{
         }
         
     }
-    void countSubmission() throws IOException, InterruptedException{
+    void countSubmission() throws IOException{
         _submissions++;
         System.out.println("Recieved something");
         //if we recieve a pic from everybody, go to next round
@@ -216,7 +214,7 @@ public class PDLMasterClient{
             //need a next round thi
         }
     }
-    boolean goToNextRound() throws IOException, InterruptedException{
+    boolean goToNextRound() throws IOException{
         _curRound++;
         if(_curRound == _playerCount){
             endGame();
@@ -249,12 +247,12 @@ public class PDLMasterClient{
             _players.get(i).nextRound();
         }
     }
-    public void submitGamePic(BufferedImage img) throws IOException, InterruptedException{
+    public void submitGamePic(BufferedImage img) throws IOException{
         System.out.println("Adding image to lane " + (_playerCount - _curRound + 0)% _playerCount);
         _picLanes[(_playerCount - _curRound)%_playerCount].addImage(img);
         countSubmission();
     }
-    public void submitGamePhrase(String p) throws IOException, InterruptedException{
+    public void submitGamePhrase(String p) throws IOException{
         _picLanes[(_playerCount - _curRound)%_playerCount].addPhrase(p);
         countSubmission();
     }
@@ -294,14 +292,10 @@ public class PDLMasterClient{
                     else if(command.startsWith("VOTE")){
                         countVote();
                     }
-                    else if(command.startsWith("GOTIT")){
-                        Thread.sleep(100);
-                    }
+                   
                 } catch (IOException ex) {
                     System.out.println("failed to read from player");
                     //can probably handle a player quiting here por favor
-                } catch (InterruptedException ex) {
-                    Logger.getLogger(PDLMasterClient.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
         }
@@ -327,7 +321,7 @@ public class PDLMasterClient{
             
             
         }        
-        void recieveImage() throws InterruptedException {
+        void recieveImage() {
             try {
                 BufferedImage img = PDLClient.instance.recieveImage(_toPlayer);
                 _picLanes[(_playerCount - _curRound + _id)% _playerCount].addImage(img);
@@ -337,7 +331,7 @@ public class PDLMasterClient{
             }
             
         }
-        void recievePhrase() throws InterruptedException{
+        void recievePhrase(){
             try {
                 String phrase = _socketReader.readLine();
                 _picLanes[(_playerCount - _curRound + _id)% _playerCount].addPhrase(phrase);
@@ -380,10 +374,10 @@ public class PDLMasterClient{
                 PDLClient.instance.sendImage(_picLanes[(_playerCount - _curRound + _id)% _playerCount].getLastImage(), _toPlayer);
             }            
         }
-        public void endGame() throws IOException, InterruptedException{
+        public void endGame() throws IOException{
             _socketWriter.println("END");
             _socketWriter.flush();
-            Thread.sleep(1000);
+            
             //send pic lanes here, client will rebuild them
             for(int i = 0; i <_picLanes.length; i++){
                 ArrayList<String> phrases = _picLanes[i].getPhrases();
@@ -399,9 +393,7 @@ public class PDLMasterClient{
                         _socketWriter.flush();
                         //send an image
                         PDLClient.instance.sendImage(images.get(j), _toPlayer);   
-                        //waits 
-                        String s = _socketReader.readLine();
-                        System.out.println(s);
+                       
                     }
                 }
                 _socketWriter.println("ENDLANE");
