@@ -70,15 +70,7 @@ public class PDLClient {
         //instantiate static instance
         PDLClient player = PDLClient.getInstance();
         ScreenManager s = ScreenManager.getInstance();
-        /*
-        //construct gui
-        HomeGUI gui = HomeGUI.getInstance();
-        SelectRoomGUI sGui = SelectRoomGUI.getInstance();
-        WaitingRoomGUI wait =  WaitingRoomGUI.getInstance();
-        DrawingPageGUI draw = DrawingPageGUI.getInstance();
-        WaitingPage waiting = WaitingPage.getInstance();
-        PhrasePageGUI phrase = PhrasePageGUI.getInstance();
-        EndGameGUI end = EndGameGUI.getInstance();*/
+      
     }
     public void showWinner(int winner){
         EndGameGUI.instance.showWinner(winner);
@@ -107,7 +99,7 @@ public class PDLClient {
     }
     public void connectToServer(){
         try {
-            _toServer = new Socket("127.0.0.1", 3000);
+            _toServer = new Socket("172.25.43.145", 3000);
         } catch (IOException ex) {
             System.out.println("Couldn't connect to server");
         }
@@ -320,7 +312,8 @@ public class PDLClient {
 
                     BufferedImage playerIcon = recieveImage(_toMaster);
                     addPlayer(name, playerIcon);
-                    //_socketWriter.println("GOTIT");
+                    _socketWriter.println("GOTIT");
+                    _socketWriter.flush();
                 }
                 WaitingRoomGUI.instance.updateDisplay();
             } catch (IOException ex) {
@@ -406,8 +399,10 @@ public class PDLClient {
                         if(!line.equals("ENDLANE")){
                             BufferedImage img = recieveImage(_toMaster);
                             toAdd.addImage(img);
+                            _socketWriter.println("GOTIT");
+                            _socketWriter.flush();
                             line = _socketReader.readLine();
-                            //_socketWriter.println("GOTIT");
+                            
                         }
                     }
                     EndGameGUI.instance.addLane(toAdd);
