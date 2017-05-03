@@ -42,6 +42,7 @@ public class WaitingRoomGUI {
     private JLabel [] playerIcons = new JLabel[maxPlayers];
     private JButton start;
     private JPanel panel;
+    private BufferedImage emptyCirc;
     public static WaitingRoomGUI getInstance() throws IOException, URISyntaxException{
         if(instance == null){
             instance = new WaitingRoomGUI();
@@ -92,7 +93,7 @@ public class WaitingRoomGUI {
         //read in empty circle pic
         URI circ = getClass().getResource("/images/emptycircle.png").toURI();
         File circF = new File(circ);
-        BufferedImage emptyCirc = ImageIO.read(circF);
+        emptyCirc = ImageIO.read(circF);
     
         //create 6 empty place holders for the player icons
         //NickName text field
@@ -161,6 +162,10 @@ public class WaitingRoomGUI {
         for(int i = 0; i <names.size(); i++){
             players[i].setText(names.get(i));
             playerIcons[i].setIcon(new ImageIcon(icons.get(i).getScaledInstance(56, 56, 0)));            
+        }
+        for(int i = names.size(); i < 6; i++){
+            players[i].setText(".....");
+            playerIcons[i].setIcon(new ImageIcon(emptyCirc.getScaledInstance(56, 56, 0)));
         }
         if(PDLClient.instance.isMaster()){
             start.setVisible(true);

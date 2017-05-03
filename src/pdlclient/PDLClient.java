@@ -117,6 +117,7 @@ public class PDLClient {
     int M_PORT = 50001;
     public void connectToMasterClient(String ipAdd){
         try {        
+            System.out.println(ipAdd);
             Socket m = new Socket(ipAdd, M_PORT);
             System.out.println(ipAdd);
             _gameThread = new GameThread(m);
@@ -284,6 +285,9 @@ public class PDLClient {
                     else if(command.equals("WINNER")){
                         showWin();
                     }
+                    else if(command.equals("REMOVE")){
+                        removePlayer();
+                    }
                 }                
             } catch (IOException ex) {
                 System.out.println("error");
@@ -381,6 +385,8 @@ public class PDLClient {
         public void endGame(){
             try {
                 String line;
+                //remove all from previous games just in case
+                EndGameGUI.instance.getPanel().removeAll();
                 while(!((line = _socketReader.readUTF()).equals("BYE"))){
                     //read and add phrase
                     PictureLane toAdd = new PictureLane();
@@ -426,6 +432,12 @@ public class PDLClient {
             _socketReader.readFully(data);
             ByteArrayInputStream bais = new ByteArrayInputStream(data);
             return ImageIO.read(bais);
+        }
+        void removePlayer() throws IOException{
+            int id = _socketReader.readInt();
+            _playerNames.remove(id);
+            _playerIcons.remove(id);
+            WaitingRoomGUI.instance.updateDisplay();
         }
     }
     public boolean isMaster(){

@@ -6,6 +6,7 @@
 package pdlclient;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -58,6 +59,7 @@ public class EndGameGUI {
        
         panel = new JPanel(new GridBagLayout());
         cons = new GridBagConstraints();
+        cons.ipadx = 20;
         panel.setBackground(c);
         //frame.add(panel);
         URI nURL = getClass().getResource("/images/nnbg.png").toURI();
@@ -72,11 +74,13 @@ public class EndGameGUI {
         cons.gridx = curX;
         cons.fill = GridBagConstraints.NONE;
         int curY = 0;
+        Color c  = new Color(99, 194, 255);
         for(int i = 0; i <phrases.size(); i++){
             
             cons.gridy = curY;
             //Phrase text field
-            JTextField text = new JTextField(phrases.get(i), 20);
+            JTextField text = new JTextField(phrases.get(i), 10);
+            text.setPreferredSize(new Dimension(128, 20));
             text.setEditable(false);
             //phrase.setFont(font1);
             text.setBorder(BorderFactory.createEmptyBorder());
@@ -85,13 +89,13 @@ public class EndGameGUI {
 
 
             //PHRASE BACKGROUND
-            JLabel nnbg = new JLabel(new ImageIcon(bg.getScaledInstance(256, 32, 0)));
+            JLabel nnbg = new JLabel(new ImageIcon(bg.getScaledInstance(128, 32, 0)));
             cons.ipady = 10;
             panel.add(nnbg, cons);
             if(images.size() > i){
                 curY++;
                 cons.gridy = curY;
-                JLabel pic = new JLabel(new ImageIcon(images.get(i)));
+                JLabel pic = new JLabel(new ImageIcon(images.get(i).getScaledInstance(128, 128, 0)));
                 panel.add(pic, cons);
             }
             curY++;
@@ -153,7 +157,27 @@ public class EndGameGUI {
             }
             curY++;
         }
+        if(PDLClient.instance.isMaster()){
+            curY++;
+            cons.gridy = curY;
+            JButton playAgain = new JButton("Play Again");
+            playAgain.addActionListener(new StartButton());
+            panel.add(playAgain, cons);
+        }
         ScreenManager.instance.changeScreen(ScreenManager.END);
+    }
+    public class StartButton implements ActionListener{
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if(PDLClient.instance.getPlayerList().size() >=2){
+                try {
+                    PDLClient.instance.getMasterClient().startGame();
+                } catch (IOException ex) {
+                    Logger.getLogger(WaitingRoomGUI.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+       }
     }
      public class VoteButton implements ActionListener{
         int id;
@@ -186,5 +210,6 @@ public class EndGameGUI {
             }
         }
         
-    }
+    }     
+    
 }

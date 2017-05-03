@@ -121,7 +121,7 @@ public class PDLMasterClient{
             for(int i =0; i<_players.size(); i++){
                 _players.get(i).sendNewPlayer(playerName, playerIcon);
             }
-            //start thread for the new player
+            //start thread for the new player, master client is player 0
             PlayerThread newPlayer = new PlayerThread(s, _players.size()+1);
             _players.add(newPlayer);
            
@@ -141,7 +141,7 @@ public class PDLMasterClient{
         //do a countdown here probs
         _picLanes = new PictureLane[_players.size()+1];
         _playerCount = _players.size()+1;
-        for(int i = 0; i<_playerCount; i++){ 
+         for(int i = 0; i<_playerCount; i++){ 
             _picLanes[i] = new PictureLane();
         }
         String randomP = _generator.randomizer();
@@ -153,8 +153,13 @@ public class PDLMasterClient{
         }
         //tell server game has started
         _inGame = true;
+        _curRound = 0;
+        _submissions = 0;
+        voteCount = 0;
+        _isDrawRound = true;
         //+1 for mastr
-
+        DrawingPageGUI.instance.clearImage();
+        EndGameGUI.instance.getPanel().removeAll();
         ScreenManager.instance.changeScreen(ScreenManager.DRAW);
         //  WaitingRoomGUI.instance.frame.setVisible(false);
         //  DrawingPageGUI.instance.frame.setVisible(true);
@@ -189,6 +194,7 @@ public class PDLMasterClient{
     void endGame() throws IOException{
         //should have complete pic lanes at this point
         System.out.println("game over");
+        _inGame = false;
         //EndGameGUI.instance.frame.setVisible(true);
         
         ScreenManager.instance.changeScreen(ScreenManager.END);
@@ -256,6 +262,27 @@ public class PDLMasterClient{
         _picLanes[(_playerCount - _curRound)%_playerCount].addPhrase(p);
         countSubmission();
     }
+    public void removePlayer(int id) throws IOException{
+        if(!_inGame){
+            //first remove player from my known player lists
+            PDLClient.instance.getPlayerList().remove(id);
+            PDLClient.instance.getPlayerIcons().remove(id);
+            _players.remove(id-1);
+
+
+
+            //tell all other players to remove him as well
+
+            for(int i =0; i < _players.size(); i++){
+                _players.get(i).removePlayerFromOther(id);
+            }
+
+            //update waiting display if !inGame
+            if(!_inGame){
+                WaitingRoomGUI.instance.updateDisplay();
+            }
+        }
+    }
     /*
     * This thread listens to players throughout the game
     * Sends to added players when we in game    
@@ -294,8 +321,15 @@ public class PDLMasterClient{
                     }
                    
                 } catch (IOException ex) {
-                    System.out.println("failed to read from player");
-                    //can probably handle a player quiting here por favor
+                    //player either quit or something went wrong so
+                    //we can kick him out anyway probs
+                    System.out.println("PLAYER QUIT!");
+                    try {
+                        removePlayer(_id);
+                    } catch (IOException ex1) {
+                        System.out.println("couldnt remove player from game");
+                    }
+                    stop();
                 }
             }
         }
@@ -404,6 +438,14 @@ public class PDLMasterClient{
         }
         public void showWinner(int id) throws IOException{
             _socketWriter.writeUTF("WINNER");
+            _socketWriter.writeInt(id);
+            _socketWriter.flush();
+        }
+        public void removePlayerFromOther(int id) throws IOException{
+            if(_id > id){
+                _id--;
+            }
+            _socketWriter.writeUTF("REMOVE");
             _socketWriter.writeInt(id);
             _socketWriter.flush();
         }
