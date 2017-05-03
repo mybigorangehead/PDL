@@ -320,6 +320,7 @@ public class PDLMasterClient{
             _socketWriter.flush();
 
             PDLClient.instance.sendImage(icon, _toPlayer); 
+            _socketReader.readLine();
         }        
         void recieveImage() {
             try {

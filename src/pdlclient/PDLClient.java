@@ -327,6 +327,8 @@ public class PDLClient {
 
                 BufferedImage playerIcon = recieveImage(_toMaster);
                 addPlayer(name, playerIcon);
+                _socketWriter.println("GOTIT");
+                _socketWriter.flush();
                 WaitingRoomGUI.instance.updateDisplay();
                 
             } catch (IOException ex) {
@@ -338,11 +340,7 @@ public class PDLClient {
             try {
                 String toDraw = _socketReader.readLine();
                 
-                //disable lobby menu
-               // WaitingRoomGUI.instance.frame.setVisible(false);
-                
-                //enable drawing page
-                //DrawingPageGUI.instance.frame.setVisible(true);
+             
                 ScreenManager.instance.changeScreen(ScreenManager.DRAW);
                 DrawingPageGUI.instance.clearImage();
                 DrawingPageGUI.instance.setPhrase(toDraw);
