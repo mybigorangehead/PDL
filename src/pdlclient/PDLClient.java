@@ -107,7 +107,7 @@ public class PDLClient {
     }
     public void connectToServer(){
         try {
-            _toServer = new Socket("127.0.0.1", 3000);
+            _toServer = new Socket("172.25.43.145", 3000);
         } catch (IOException ex) {
             System.out.println("Couldn't connect to server");
         }
@@ -407,6 +407,7 @@ public class PDLClient {
                             BufferedImage img = recieveImage(_toMaster);
                             toAdd.addImage(img);
                             line = _socketReader.readLine();
+                            _socketWriter.println("GOTIT");
                         }
                     }
                     EndGameGUI.instance.addLane(toAdd);

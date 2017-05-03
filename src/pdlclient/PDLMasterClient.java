@@ -114,6 +114,7 @@ public class PDLMasterClient{
                 socketWriter.println(names.get(i));
                 socketWriter.flush();
                 PDLClient.instance.sendImage(icons.get(i), s);
+                socketReader.readLine();
             
             }
             
@@ -390,7 +391,9 @@ public class PDLMasterClient{
                         _socketWriter.println("PIC");
                         _socketWriter.flush();
                         //send an image
-                        PDLClient.instance.sendImage(images.get(j), _toPlayer);    
+                        PDLClient.instance.sendImage(images.get(j), _toPlayer);   
+                        //waits 
+                        _socketReader.readLine();
                     }
                 }
                 _socketWriter.println("ENDLANE");
