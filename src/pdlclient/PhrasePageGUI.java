@@ -145,7 +145,11 @@ public class PhrasePageGUI {
                // frame.setVisible(false);
                // WaitingPage.instance.frame.setVisible(true);
                 ScreenManager.instance.changeScreen(ScreenManager.WAITING);
-                PDLClient.instance.sendGamePhrase(phrase.getText());
+                try {
+                    PDLClient.instance.sendGamePhrase(phrase.getText());
+                } catch (IOException ex) {
+                    Logger.getLogger(PhrasePageGUI.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
         }
         

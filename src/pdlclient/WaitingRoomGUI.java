@@ -17,6 +17,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -170,7 +172,11 @@ public class WaitingRoomGUI {
         @Override
         public void actionPerformed(ActionEvent e) {
             if(PDLClient.instance.getPlayerList().size() >=2){
-                PDLClient.instance.getMasterClient().startGame();
+                try {
+                    PDLClient.instance.getMasterClient().startGame();
+                } catch (IOException ex) {
+                    Logger.getLogger(WaitingRoomGUI.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
         }
     }     

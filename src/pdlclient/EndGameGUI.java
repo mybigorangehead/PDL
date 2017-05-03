@@ -17,6 +17,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -162,16 +164,24 @@ public class EndGameGUI {
         public void actionPerformed(ActionEvent e) {
             if(PDLClient.instance.isMaster()){ 
                 ScreenManager.instance.changeScreen(ScreenManager.WAITING);
-                PDLClient.instance.getMasterClient().recieveVote(id);
-             //   frame.setVisible(false);
-             //   WaitingPage.instance.frame.setVisible(true);
+                try {
+                    PDLClient.instance.getMasterClient().recieveVote(id);
+                    //   frame.setVisible(false);
+                    //   WaitingPage.instance.frame.setVisible(true);
+                } catch (IOException ex) {
+                    Logger.getLogger(EndGameGUI.class.getName()).log(Level.SEVERE, null, ex);
+                }
                
             }
             else{
                 ScreenManager.instance.changeScreen(ScreenManager.WAITING);
-                PDLClient.instance.sendVote(id);
-               // frame.setVisible(false);
-               // WaitingPage.instance.frame.setVisible(true);
+                try {
+                    PDLClient.instance.sendVote(id);
+                    // frame.setVisible(false);
+                    // WaitingPage.instance.frame.setVisible(true);
+                } catch (IOException ex) {
+                    Logger.getLogger(EndGameGUI.class.getName()).log(Level.SEVERE, null, ex);
+                }
                
             }
         }
