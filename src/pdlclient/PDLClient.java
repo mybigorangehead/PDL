@@ -308,13 +308,17 @@ public class PDLClient {
                 String name;
                 //read all other players names and images
                 while(!(name = _socketReader.readLine()).equals("BYE")){
+                    
                     System.out.println(name);           
 
                     BufferedImage playerIcon = recieveImage(_toMaster);
                     addPlayer(name, playerIcon);
                     _socketWriter.println("GOTIT");
+                    _socketWriter.println("GOTIT");
                     _socketWriter.flush();
+                    
                 }
+                System.out.println("updating display");
                 WaitingRoomGUI.instance.updateDisplay();
             } catch (IOException ex) {
                 System.out.println("Error sending name or icon.");
