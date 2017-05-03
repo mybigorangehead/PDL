@@ -107,7 +107,7 @@ public class PDLClient {
     }
     public void connectToServer(){
         try {
-            _toServer = new Socket("172.25.43.145", 3000);
+            _toServer = new Socket("127.0.0.1", 3000);
         } catch (IOException ex) {
             System.out.println("Couldn't connect to server");
         }
@@ -320,7 +320,7 @@ public class PDLClient {
 
                     BufferedImage playerIcon = recieveImage(_toMaster);
                     addPlayer(name, playerIcon);
-                    
+                    System.out.println("GOTIT");
                 }
                 WaitingRoomGUI.instance.updateDisplay();
             } catch (IOException ex) {
@@ -446,12 +446,14 @@ public class PDLClient {
         System.out.println("sending: " + b.length);
         OutputStream out = s.getOutputStream();
         DataOutputStream dos = new DataOutputStream(out);
+        dos.flush();
         dos.writeInt(b.length);
         dos.flush();
         dos.write(b, 0, b.length);
         dos.flush();
-        dos.close();
-        out.close();
+        
+        //dos.close();
+        //out.close();
     }
     public BufferedImage recieveImage(Socket s) throws IOException{
         
@@ -461,6 +463,8 @@ public class PDLClient {
         byte[] data = new byte[length];
         System.out.println("recievving" + length);
         dis.readFully(data);
+        
+        //dis.reset();
         ByteArrayInputStream bais = new ByteArrayInputStream(data);
         return ImageIO.read(bais);
     }
