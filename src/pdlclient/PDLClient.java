@@ -5,95 +5,127 @@
  */
 package pdlclient;
 import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferByte;
-import java.awt.image.WritableRaster;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.URISyntaxException;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.imageio.ImageIO;
-import javax.imageio.stream.ImageInputStream;
 import javax.swing.JOptionPane;
 
 /**
- * Using singleton
+ * Using singleton because there will only be one client
+ * 
  * @author Josh
  */
 public class PDLClient {
     public static PDLClient instance; 
+    
+    //player name
     private String _playerName;
+    
+    //the room were in
     private String _currentRoom;
     
+    //a master client object gets created if we are a master client
     private PDLMasterClient _master = null;
     private boolean _isMaster = false;
     
+    //our socket to connect to the server
     private Socket _toServer;
     
-   // private Socket _toMaster;
+   //thread to hold connection to a game when we are not the master client
     private GameThread _gameThread;
-    //player icons are 512 x 512 pics
-    private BufferedImage _playerIcon;
     
+    //player icons are 128 x 128 pics
+    private BufferedImage _playerIcon;    
     
-    //need to know who else is in my game yo
+    //arraylists to know what other players that are in my game
     private ArrayList<String> _playerNames = new ArrayList<>();
     private ArrayList<BufferedImage> _playerIcons = new ArrayList<>();
-    //socket to server
-    //socket to master client, may want to create masterclient class soon....
-    /**
-     * @param args the command line arguments
-     * @throws java.io.IOException
-     */
-    PDLClient(){
-     
+    
+    private PDLClient(){
+        
     }
+    /**
+     * Singleton getInstance
+     * @return instance
+     */
     public static PDLClient getInstance(){
         if(instance == null){
             instance = new PDLClient();
         }
         return instance;
     }
-    
+    /**
+    * The main creates the only client object and the only screen manager object(operates the gui)
+    */
     public static void main(String[] args) throws IOException, URISyntaxException {
-        //instantiate static instance
+        //instantiate static instances
         PDLClient player = PDLClient.getInstance();
         ScreenManager s = ScreenManager.getInstance();
       
     }
+    
+    /*
+    * Tells our end game screen what lane to show, winner is sent from master client
+    */
     public void showWinner(int winner){
         EndGameGUI.instance.showWinner(winner);
     }
+    
+    /*
+    * stores the name enter on the home page of the gui
+    */
     public void setPlayerName(String name){
         _playerName = name;
     }
+    
+    /*
+    * stores the icon drawn on the home page oh the gui
+    */
     public void setPlayerIcon(BufferedImage i){
         _playerIcon = i;
     }
+    
+    /*
+    * returns my player name
+    */
     public String getPlayerName(){
         return _playerName;
     }
+    
+    /*
+    * returns my player icon
+    */
     public BufferedImage getPlayerIcon(){
         return _playerIcon;
     }
+    
+    /*
+    * Makes this client a master client
+    */
     public void setMaster(String roomCode) throws IOException{
         _isMaster = true;
         _master = new PDLMasterClient(roomCode, _toServer);
     }
+    
+    /*
+    * stores the code of the current room we're in
+    */
     public void setCurrentRoom(String code){
         _currentRoom  = code;
     }
+    
+    /*
+    * returns th
+    */
     public String getCurrentRoom(){
         return _currentRoom;
     }
