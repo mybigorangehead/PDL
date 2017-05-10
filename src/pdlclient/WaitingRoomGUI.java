@@ -30,7 +30,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
 /**
- *
+ * GUI to display the game Lobby
  * @author Josh
  */
 public class WaitingRoomGUI {
@@ -50,12 +50,6 @@ public class WaitingRoomGUI {
         return instance;
     }
     private WaitingRoomGUI() throws URISyntaxException, IOException{
-        /*frame = new JFrame("Waiting Room");
-        Color c  = new Color(99, 194, 255);
-        frame.getContentPane().setBackground(c);
-        frame.setSize(1024, 900);
-        frame.setLocationRelativeTo(null);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);*/
         Color c  = new Color(99, 194, 255);
         panel = new JPanel(new GridBagLayout());
         GridBagConstraints cons = new GridBagConstraints();

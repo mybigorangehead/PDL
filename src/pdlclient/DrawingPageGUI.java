@@ -18,16 +18,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
+ * This gui displays the phrase to draw
+ * Allows the player to draw a pic and submit it
  * @author yayang
  */
 public class DrawingPageGUI {
-    /*public static void main(String[] args) throws IOException, URISyntaxException 
-    {
-        DrawingPageGUI DrawingPage = new DrawingPageGUI();
-        DrawingPage = getInstance();
-    }*/
-    
     public static DrawingPageGUI instance;
     //JFrame frame;
     private DrawPanel draw;
@@ -43,15 +38,9 @@ public class DrawingPageGUI {
     //constructs the home page interface
     private DrawingPageGUI() throws IOException, URISyntaxException{
         //frame = new JFrame("Drawing Page");
-        Color c  = new Color(99, 194, 255);
-        /*frame.getContentPane().setBackground(c);
-        frame.setSize(1024, 900);
-        frame.setLocationRelativeTo(null);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);*/
-       
+        Color c  = new Color(99, 194, 255);       
         panel = new JPanel(new GridBagLayout());
         GridBagConstraints cons = new GridBagConstraints();        
-        
         
         //Phrase text field
         phrase = new JTextField("Phrase", 20);
@@ -124,15 +113,20 @@ public class DrawingPageGUI {
         //frame.setVisible(false);
        // frame.pack();
     }
+    //sets the phrase to draw
     public void setPhrase(String p){
         phrase.setText(p);
     }
+    //clears the iamge
     public void clearImage(){
         draw.clear();
     }
     public JPanel getPanel(){
         return panel;
     }
+    /*
+    * this buttons calls our submit game pic methods
+    */
     public class SubmitButton implements ActionListener{
 
         @Override

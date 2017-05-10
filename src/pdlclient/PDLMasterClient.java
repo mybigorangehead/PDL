@@ -34,21 +34,27 @@ import javax.imageio.ImageIO;
  */
 public class PDLMasterClient{
     
-    
+    //array list of players in the game
     private ArrayList<PlayerThread> _players;
+    
+    //thread for listening for new players joining
     private LobbyWait _lobby;
-    private ServerThread _toServer;
-    //private InGameThread gameManager;
-    //may need a third thread for the server
     
+    //thread to the server
+    private ServerThread _toServer;    
     
+    //socket to listen for connecting players
     private ServerSocket _master;
+    
+    //room code for our game
     private String _roomCode;
+    
+    //port to listen on
     private int _listenPort = 50001;
     
     private boolean _inGame = false;
     
-    //IN GAME TRACKERS
+    //GAME stuff
     private int _submissions = 0;
     private int _curRound = 0;
     private int _playerCount;
@@ -56,6 +62,8 @@ public class PDLMasterClient{
     private PictureLane [] _picLanes;
     private phraseGenerator _generator;
     private int maxPlayers = 5;
+    
+    
     public PDLMasterClient(String room, Socket toServer) throws IOException{
         _roomCode = room;
         _generator = new phraseGenerator();
@@ -66,11 +74,11 @@ public class PDLMasterClient{
         _lobby = new LobbyWait();
         _lobby.start();
         _toServer = new ServerThread(toServer);
-    }
+    } 
     
-   
-    
-    
+    /*
+    * this thread listens using the _master ServerSocket for players joining/quiting the game
+    */
     public class LobbyWait extends Thread{
          @Override
         public void run() {
@@ -88,6 +96,9 @@ public class PDLMasterClient{
         }
     }
     final String BYE = "BYE";
+    /*
+    * method to add a new player to the game
+    */
     public void addPlayerToGame(Socket s){
         try{
             DataInputStream socketReader = new DataInputStream(s.getInputStream());
@@ -136,6 +147,9 @@ public class PDLMasterClient{
             System.out.println("error");
         }
     }
+    /*
+    * start the game and tell all other players and server its starting
+    */
     public void startGame() throws IOException{
         _toServer.ChangeGameState("DENY");
         //do a countdown here probs
@@ -168,6 +182,9 @@ public class PDLMasterClient{
     }
     int [] votes = new int[6];
     int voteCount = 0;
+    /*
+    * count a vote locally
+    */
     public void recieveVote(int id) throws IOException{
         votes[id]++;
         voteCount++;
@@ -187,10 +204,16 @@ public class PDLMasterClient{
             }
         }
     }
+    /*
+    * display the winner of the game
+    */
     void showWinner(int id){
         //edit end game gui to just show winning lane i think
         EndGameGUI.instance.showWinner(id);
     }
+    /*
+    * show pic lanes for me and send them to everyone else
+    */
     void endGame() throws IOException{
         //should have complete pic lanes at this point
         System.out.println("game over");
@@ -207,6 +230,9 @@ public class PDLMasterClient{
         }
         
     }
+    /*
+    * counts a submission each time a pic or phrase is recieved
+    */
     void countSubmission() throws IOException{
         _submissions++;
         System.out.println("Recieved something");
@@ -220,6 +246,9 @@ public class PDLMasterClient{
             //need a next round thi
         }
     }
+    /*
+    * determines whether to end the game or proceed to the next round
+    */
     boolean goToNextRound() throws IOException{
         _curRound++;
         if(_curRound == _playerCount){
@@ -230,6 +259,9 @@ public class PDLMasterClient{
             return true;
         }
     }
+    /*
+    * makes the game go to the next round
+    */
     void nextRound() throws IOException{
         //first round is drawRound
         _isDrawRound = !_isDrawRound;
@@ -253,15 +285,24 @@ public class PDLMasterClient{
             _players.get(i).nextRound();
         }
     }
+    /*
+    * submit a game pic to self
+    */
     public void submitGamePic(BufferedImage img) throws IOException{
         System.out.println("Adding image to lane " + (_playerCount - _curRound + 0)% _playerCount);
         _picLanes[(_playerCount - _curRound)%_playerCount].addImage(img);
         countSubmission();
     }
+    /*
+    * submit a game phrase to self
+    */
     public void submitGamePhrase(String p) throws IOException{
         _picLanes[(_playerCount - _curRound)%_playerCount].addPhrase(p);
         countSubmission();
     }
+    /*
+    * remove a player from the game if they quit in the lobby
+    */
     public void removePlayer(int id) throws IOException{
         if(!_inGame){
             //first remove player from my known player lists
@@ -333,6 +374,9 @@ public class PDLMasterClient{
                 }
             }
         }
+        /*
+        * add the vote to the proper pic lane
+        */
         void countVote(){
             try {
                 int i = _socketReader.readInt();
@@ -341,6 +385,9 @@ public class PDLMasterClient{
                 System.out.println("Could not read vote");
             }
         }
+        /*
+        * send a new player to other clients
+        */
         public void sendNewPlayer(String name, BufferedImage icon) throws IOException{
             
             //tell the player we're sending him a new player
@@ -352,9 +399,10 @@ public class PDLMasterClient{
             _socketWriter.flush();
 
             sendImage(icon, _socketWriter); 
-            
-            
-        }        
+        }   
+        /*
+        * recieve an image from a player
+        */
         void recieveImage() {
             try {
                 BufferedImage img = recieveImageTwo(_socketReader);
@@ -365,6 +413,9 @@ public class PDLMasterClient{
             }
             
         }
+        /*
+        * recieve a phrase from a player
+        */
         void recievePhrase(){
             try {
                 String phrase = _socketReader.readUTF();
@@ -374,10 +425,16 @@ public class PDLMasterClient{
                 System.out.println("couldnt recieve phrase.");
             }
         }
+        /*
+        * send a phrase to a player
+        */
         void sendPhrase(String p) throws IOException{
             _socketWriter.writeUTF(p);
             _socketWriter.flush();
         }
+        /*
+        * tells a player the game is starting
+        */
         public void startGame() throws IOException{
             _curRound = 0;
             _isDrawRound = true;
@@ -394,6 +451,9 @@ public class PDLMasterClient{
             
             //set master client in game thread MAYBE
         }
+        /*
+        * tells a player to go to the next round
+        */
         public void nextRound() throws IOException{ 
             if(_isDrawRound){
                 _socketWriter.writeUTF("DRAW");
@@ -408,6 +468,9 @@ public class PDLMasterClient{
                 sendImage(_picLanes[(_playerCount - _curRound + _id)% _playerCount].getLastImage(), _socketWriter);
             }            
         }
+        /*
+        * tells player the game has ended
+        */
         public void endGame() throws IOException{
             _socketWriter.writeUTF("END");
             _socketWriter.flush();
@@ -436,11 +499,17 @@ public class PDLMasterClient{
             _socketWriter.writeUTF("BYE");
             _socketWriter.flush();
         }
+        /*
+        * tell the player what lane won
+        */
         public void showWinner(int id) throws IOException{
             _socketWriter.writeUTF("WINNER");
             _socketWriter.writeInt(id);
             _socketWriter.flush();
         }
+        /*
+        * tells the player who quit
+        */
         public void removePlayerFromOther(int id) throws IOException{
             if(_id > id){
                 _id--;
@@ -450,6 +519,10 @@ public class PDLMasterClient{
             _socketWriter.flush();
         }
     }
+    /*
+    * this thread keeps connection to the server
+    * we tell the server when that game has start/ended
+    */
     public class ServerThread extends Thread{
         private Socket _toServer;
         private BufferedReader _socketReader;
@@ -482,22 +555,22 @@ public class PDLMasterClient{
             }
         }
     }
+    //sends an image
     public void sendImage(BufferedImage img, DataOutputStream s) throws IOException{
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ImageIO.write(img, "PNG", baos);
         byte [] imgArr = baos.toByteArray();
         sendBytes(imgArr, s);
     }
+    //sends byte array
     public void sendBytes(byte[] b, DataOutputStream _socketWriter) throws IOException{
         System.out.println("sending: " + b.length);
         _socketWriter.writeInt(b.length);
         _socketWriter.flush();
         _socketWriter.write(b, 0, b.length);
         _socketWriter.flush();
-
-        //dos.close();
-        //out.close();
     }
+    //recieve Image as bytes
     public BufferedImage recieveImageTwo(DataInputStream _socketReader) throws IOException{
         int length = _socketReader.readInt();
         byte[] data = new byte[length];

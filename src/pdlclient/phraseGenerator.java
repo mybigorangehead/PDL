@@ -17,7 +17,7 @@ import java.util.logging.Logger;
 
 
 /**
- *
+ *class to generate the phrases to draw
  * @author yayang
  */
 public class phraseGenerator {

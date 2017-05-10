@@ -15,7 +15,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 /**
- *
+ * This classes is used to manage what gui panel to display
  * @author Josh
  */
 public class ScreenManager {

@@ -18,15 +18,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
+ * This gui shows the picture another player draw, and allows player to type in 
+ * a phrase
  * @author yayang
  */
 public class PhrasePageGUI {
-    /*public static void main(String[] args) throws IOException, URISyntaxException 
-    {
-        DrawingPageGUI DrawingPage = new DrawingPageGUI();
-        DrawingPage = getInstance();
-    }*/
+
     
     public static PhrasePageGUI instance;
     //JFrame frame;
@@ -42,13 +39,7 @@ public class PhrasePageGUI {
     }
     //constructs the home page interface
     private PhrasePageGUI() throws IOException, URISyntaxException{
-        //frame = new JFrame("Phrase Page");
-        Color c  = new Color(99, 194, 255);
-        /*frame.getContentPane().setBackground(c);
-        frame.setSize(1024, 900);
-        frame.setLocationRelativeTo(null);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);*/
-       
+        Color c  = new Color(99, 194, 255);       
         panel = new JPanel(new GridBagLayout());
         GridBagConstraints cons = new GridBagConstraints();        
         
@@ -79,7 +70,6 @@ public class PhrasePageGUI {
         panel.add(nnbg, cons);
 
         panel.setBackground(c);
-
         
         //the drawing box
         int size = 256;
@@ -103,18 +93,12 @@ public class PhrasePageGUI {
          //remove borer
         submit.setBorder(BorderFactory.createEmptyBorder());
         submit.setContentAreaFilled(false);
-       // ActionListener cAl = new MenuButtons();
-        //submit.addActionListener(cAl);
-        //cons.fill = GridBagConstraints.HORIZONTAL;
+
         cons.gridy = 5;
         cons.gridx = 0;
         cons.ipady = 20;
         panel.add(submit, cons);
         submit.addActionListener(new SubmitButton());
-        //frame.add(panel);
-
-        //frame.setVisible(false);
-       // frame.pack();
     }
     public void setImage(BufferedImage i){
         img.setIcon(new ImageIcon(i));

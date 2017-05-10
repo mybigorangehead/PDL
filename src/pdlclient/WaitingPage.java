@@ -16,7 +16,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 /**
- *
+ * GUI panel that just says "Waiting..." in the center 
  * @author Josh
  */
 public class WaitingPage {
@@ -32,10 +32,6 @@ public class WaitingPage {
     private WaitingPage() throws IOException{
        // frame = new JFrame("Waiting...");
         Color c  = new Color(99, 194, 255);
-        /*frame.getContentPane().setBackground(c);
-        frame.setSize(1024, 900);
-        frame.setLocationRelativeTo(null);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);*/
        
         panel = new JPanel(new GridBagLayout());
         GridBagConstraints cons = new GridBagConstraints();

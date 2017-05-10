@@ -124,11 +124,14 @@ public class PDLClient {
     }
     
     /*
-    * returns th
+    * returns the code of the room we are in
     */
     public String getCurrentRoom(){
         return _currentRoom;
     }
+    /*
+    * connects us to the server
+    */
     public void connectToServer(){
         try {
             _toServer = new Socket("127.0.0.1", 3000);
@@ -136,9 +139,15 @@ public class PDLClient {
             System.out.println("Couldn't connect to server");
         }
     }
+    /*
+    * returns the socket to the server
+    */
     public Socket getServerSocket(){
         return _toServer;
     }
+    /*
+    * closes the socket to the server
+    */
     public void disconnectServer(){
         try {
             _toServer.close();
@@ -146,7 +155,12 @@ public class PDLClient {
             System.out.println("Couldn't disconnect from server");
         }
     }
+    //port to use if master client
     int M_PORT = 50001;
+    
+    /*
+    *connects us to a master client
+    */
     public void connectToMasterClient(String ipAdd){
         try {        
             System.out.println(ipAdd);
@@ -160,7 +174,11 @@ public class PDLClient {
             System.out.println("couldn't connect to master client");
         }
     }
+    //code to send server to create a game
     String CREATE_CODE = "CREATE";
+    /*
+    * tells the server we want to create a game
+    */
     public void createRoom(){
         BufferedReader socketReader;
         PrintWriter socketWriter; 
@@ -192,7 +210,11 @@ public class PDLClient {
             System.out.println("Couldn't create room");
         }
     }
+    //code to join a game
     String JOIN_CODE = "JOIN";
+    /*
+    * tells the server we want to join a game
+    */
     public void joinRoom(String joinCode){
         BufferedReader socketReader;
         PrintWriter socketWriter; 
@@ -228,7 +250,11 @@ public class PDLClient {
             System.out.println("Couldn't create room");
         }
     }
+    //code to join quick
     String QUICK = "QUICK";
+    /*
+    * tells the server we want to quick join a game, creates a game if no games to join
+    */
     public void joinQuick(){
         BufferedReader socketReader;
         PrintWriter socketWriter; 
@@ -266,10 +292,16 @@ public class PDLClient {
             System.out.println("Couldn't create room");
         }
     }
-    
+    /*
+    * returns the arraylist of player names in our game
+    */
     public ArrayList<String> getPlayerList(){
         return _playerNames;
     }
+    
+    /*
+    * returns the arraylist of player icons in our game
+    */
     public ArrayList<BufferedImage> getPlayerIcons(){
         return _playerIcons;
     }
@@ -326,6 +358,9 @@ public class PDLClient {
             }
         
         }
+        /*
+        * displays the winner gui
+        */
         void showWin(){
             try {
                 int winner = _socketReader.readInt();
@@ -334,6 +369,9 @@ public class PDLClient {
                 System.out.println("could not recieve winner");
             }
         }
+        /*
+        * sets up and displays the game lobby
+        */
         void setUpLobbyDisplay(){
             try {
                 //send my name
@@ -356,6 +394,9 @@ public class PDLClient {
                 System.out.println("Error sending name or icon.");
             }
         }
+        /*
+        * recieves a player name and icon, adds to correct arraylists
+        */
         public void recieveNewPlayer(){
             try {
                 String name = _socketReader.readUTF();
@@ -365,7 +406,10 @@ public class PDLClient {
             } catch (IOException ex) {
                 System.out.println("Couldn't recieve new player");
             }
-        }    
+        }
+        /*
+        * recieves a phrase to draw, displays drawing page
+        */
         void setUpDrawPage(){
         
             try {
@@ -380,7 +424,9 @@ public class PDLClient {
                 System.out.println("Couldnt recieve phrase");
             }
         }
-        
+        /*
+        * recieves a picture to phrase, displays phrase page
+        */
         public void setUpPhrasePage(){
             try {
                
@@ -398,22 +444,34 @@ public class PDLClient {
                 System.out.println("Couldn't recieve image.");
             }
         }
+        /*
+        * sends a phrase to the master client
+        */
         public void sendGamePhrase(String p) throws IOException{
             _socketWriter.writeUTF("PHRASE");
             _socketWriter.flush();
             _socketWriter.writeUTF(p);
             _socketWriter.flush();
         }
+        /*
+        *sends a vote to the master client
+        */
         public void sendVote(int id) throws IOException{
             _socketWriter.writeUTF("VOTE");
             _socketWriter.writeInt(id);
             _socketWriter.flush();
         }
+        /*
+        *sends an image to the master client
+        */
         public void sendGameImage(BufferedImage img) throws IOException{
             _socketWriter.writeUTF("PICTURE");
             _socketWriter.flush();
             sendImage(img);
         }
+         /*
+        * receives and displays all the picture lanes
+        */
         public void endGame(){
             try {
                 String line;
@@ -441,22 +499,27 @@ public class PDLClient {
                 System.out.println("Couldn't recieve picture lane");
             }
         }
+        //sends an image
         public void sendImage(BufferedImage img) throws IOException{
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             ImageIO.write(img, "PNG", baos);
             byte [] imgArr = baos.toByteArray();
             sendBytes(imgArr);
         }
+        /*
+        * sends a byte array
+        * used for images
+        */
         public void sendBytes(byte[] b) throws IOException{
             System.out.println("sending: " + b.length);
             _socketWriter.writeInt(b.length);
             _socketWriter.flush();
             _socketWriter.write(b, 0, b.length);
             _socketWriter.flush();
-
-            //dos.close();
-            //out.close();
         }
+        /*
+        * recieves an image as a byte array
+        */
         public BufferedImage recieveImage() throws IOException{
             int length = _socketReader.readInt();
             byte[] data = new byte[length];
@@ -465,6 +528,9 @@ public class PDLClient {
             ByteArrayInputStream bais = new ByteArrayInputStream(data);
             return ImageIO.read(bais);
         }
+        /*
+        * removes a player who quit in the lobby
+        */
         void removePlayer() throws IOException{
             int id = _socketReader.readInt();
             _playerNames.remove(id);
@@ -472,22 +538,40 @@ public class PDLClient {
             WaitingRoomGUI.instance.updateDisplay();
         }
     }
+    /*
+    * returns true if we are a master lcient
+    */
     public boolean isMaster(){
         return _isMaster;
     }
+    /*
+    * store a player name and icon
+    */
     public void addPlayer(String playerName, BufferedImage playerImage){
         _playerNames.add(playerName);
         _playerIcons.add(playerImage);
     }
+    /*
+    * returns the socket to the master client
+    */
     public PDLMasterClient getMasterClient(){
         return _master;
     }
+    /*
+    * sends game image from the thread
+    */
     public void sendGameImage(BufferedImage img) throws IOException{
         _gameThread.sendGameImage(img);
     }
+    /*
+    * sends game phrase from the thread
+    */
     public void sendGamePhrase(String p) throws IOException{
         _gameThread.sendGamePhrase(p);
     }
+    /*
+    * sends game vote from our thread
+    */
     public void sendVote(int id) throws IOException{
         _gameThread.sendVote(id);
     }

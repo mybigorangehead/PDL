@@ -16,7 +16,10 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 /**
- *
+ * The GUI seen when you first start the client
+ * allows users to enter a nickname
+ * allows users to draw a player icon
+ * allows users to select play mode
  * @author Josh
  */
 public class HomeGUI {
@@ -35,13 +38,6 @@ public class HomeGUI {
     }
     //constructs the home page interface
     private HomeGUI() throws IOException, URISyntaxException{
-        
-        /*frame = new JFrame("Picture Down The Lane");
-        Color c  = new Color(99, 194, 255);
-        frame.getContentPane().setBackground(c);
-        frame.setSize(1024, 900);
-        frame.setLocationRelativeTo(null);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);*/
        
         myPanel = new JPanel(new GridBagLayout());
         GridBagConstraints cons = new GridBagConstraints();

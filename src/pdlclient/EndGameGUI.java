@@ -30,7 +30,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 /**
- *
+ * GUI panel that is used to show the winner or all pictures lanes of the game
  * @author Josh
  */
 public class EndGameGUI {
@@ -52,10 +52,6 @@ public class EndGameGUI {
         displayedLanes = new ArrayList<>();
         //frame = new JFrame("Waiting...");
         Color c  = new Color(99, 194, 255);
-        /*frame.getContentPane().setBackground(c);
-        frame.setSize(1024, 900);
-        frame.setLocationRelativeTo(null);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);*/
        
         panel = new JPanel(new GridBagLayout());
         cons = new GridBagConstraints();
@@ -67,6 +63,9 @@ public class EndGameGUI {
         bg = ImageIO.read(nPic);
     }
     int curX =0;
+    /*
+    * adds a new picture lane to display
+    */
     public void addLane(PictureLane p){
         
         ArrayList<String> phrases = p.getPhrases();

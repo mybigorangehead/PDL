@@ -32,7 +32,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 /**
- *
+ * GUI to allow a player to select create or join room
  * @author Josh
  */
 public class SelectRoomGUI {
@@ -49,12 +49,6 @@ public class SelectRoomGUI {
         return instance;
     }
     private SelectRoomGUI() throws IOException, URISyntaxException{
-        /*frame = new JFrame("Select Room");
-         Color c  = new Color(99, 194, 255);
-        frame.getContentPane().setBackground(c);
-        frame.setSize(1024, 900);
-        frame.setLocationRelativeTo(null);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);*/
         
         myPanel = new JPanel(new GridBagLayout());
         GridBagConstraints cons = new GridBagConstraints();

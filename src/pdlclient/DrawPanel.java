@@ -24,17 +24,10 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 
-/*
-unused for now
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.imageio.ImageIO;
-import java.io.File;
-import java.io.IOException;
-import java.net.URI;
 /**
- * 
+ * Draw panel is a custom J component that we use for drawing the player icons
+ * or game images
  * @josh
  */
 public class DrawPanel extends JComponent {

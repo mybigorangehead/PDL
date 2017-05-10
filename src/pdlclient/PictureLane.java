@@ -9,7 +9,8 @@ package pdlclient;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 /**
- *
+ * Class to hold a lane of pictures and phrases
+ * just getters and setters
  * @author Josh
  */
 public class PictureLane {
